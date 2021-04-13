@@ -28,7 +28,7 @@ import McsPy.McsData
 import McsPy.McsCMOS
 from McsPy import ureg, Q_
 
-filedirec = r"D:\Files_Reutlingen_Jenny\191021_extra"
+filedirec = r"D:/Files_Reutlingen_Jenny/191021_hdf5"
 outputdirectory_HS='D:/Files_Reutlingen_Jenny/191021_extra_Spikesorting/output_HS'
 outputdirectory_HS_phy='D:/Files_Reutlingen_Jenny/191021_extra_Spikesorting/output_HS_exportphy'
 probe_file="C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb"
@@ -68,7 +68,7 @@ print(ss.installed_sorters())
 ss.get_default_params("herdingspikes")
 
 #HerdingSpikes spike sorting
-sorting_HS = ss.run_herdingspikes(recording_cmrprobe, output_folder=outputdirectory_HS, filter=False)
+sorting_HS = ss.run_herdingspikes(recording_cmrprobe, output_folder=outputdirectory_HS)
 sorting_curated = st.curation.threshold_num_spikes(sorting=sorting_HS, threshold=10, threshold_sign='less')
 st.postprocessing.export_to_phy(recording=recording_cmrprobe, sorting=sorting_curated, output_folder=outputdirectory_HS_phy)
 print('Units found with Herding Spikes:', sorting_SC.get_unit_ids())
