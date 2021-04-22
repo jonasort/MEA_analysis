@@ -40,9 +40,9 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=4):
     y = lfilter(b, a, data)
     return y    
     
-fs = 25000          #sample rate
+fs = 10000          #sample rate
 lowcut = 150        #cutoff frequencies (in Hz)
-highcut = 5000
+highcut = 4500
 #data = dset    
 #y = butter_bandpass_filter(data, lowcut, highcut, fs, order=4)        
 

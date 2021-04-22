@@ -62,8 +62,9 @@ ________________________DIRECTORIES_%_IMPORTS___________________________________
 
 # adjust the directories first!
 scriptdirectory = "C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = "D:/Files_Reutlingen_Jenny/191023"
-outputdirectory = "D:/Files_Reutlingen_Jenny/191023_output_210315"
+inputdirectory = "D:/MEA_DATA_Aachen/PREPROCESSED/20210401_hippocampus_div7_h5"
+
+
 
 import os
 
@@ -105,14 +106,18 @@ import matplotlib.pyplot as plt
 #%matplotlib inline
 import warnings
 warnings.filterwarnings('ignore')
-%load_ext autoreload
+#%load_ext autoreload
 %autoreload 2
 from Butterworth_Filter import butter_bandpass, butter_bandpass_filter
 import glob
 import scipy
 import matplotlib.pyplot as plt
 from plot_signal_and_spikes import plot_signal_and_spikes_from_bandpassfilteredsignal
+import time
 
+
+timestr = time.strftime("%d%m%Y")
+outputdirectory=inputdirectory+('_output_spikesorting_%s' % timestr)
 
 
 '''
@@ -375,7 +380,7 @@ _____________________________WORKING SCRIPT____________________________________
 
 # set filter cuts in Hz
 lowcut = 150
-highcut = 5000
+highcut = 4500
 
 # Length of cutouts around shapes
 pre = 0.001 # 1 ms
@@ -420,7 +425,7 @@ for file in filelist:
     np_analog_stream_1_data = np.transpose(channel_raw_data.recordings[0].analog_streams[1].channel_data)
     np_analog_stream_1_data_transpose = np.transpose(np_analog_stream_1_data)
     
-    outpath=outputdirectory+'/'+filename.split('.')[0]+'_plots'
+    outpath=outputdirectory+'__'+filename.split('__')[1]+'_plots'
     try:
         os.mkdir(outpath)
     except OSError:
@@ -445,10 +450,8 @@ for file in filelist:
         print(channellabel)
         #restingspikedic[channellabel] = crossings[crossings>2750000] # nur crossings, wenn keine stimuli sind
         fig=plot_signal_and_spikes_from_bandpassfilteredsignal(bandpassfilteredsignal, spikes, threshold, 
-                                                               channellabel, fs, time_in_sec)
+                                                               channellabel, fs, time_in_sec, tick=tick)
         print('STD- THRESHOLD: '+str(threshold))
-        
-
         
 
         # This Part is for finding MAD spikes + plotting
@@ -461,7 +464,7 @@ for file in filelist:
         print(channellabel)
         #restingspikedic[channellabel] = crossings[crossings>2750000] # nur crossings, wenn keine stimuli sind
         fig2=plot_signal_and_spikes_from_bandpassfilteredsignal(bandpassfilteredsignal, spikes, threshold, 
-                                                               channellabel, fs, time_in_sec)
+                                                               channellabel, fs, time_in_sec, tick=tick)
         print('MAD- THRESHOLD: '+str(threshold))
         
         
