@@ -2,7 +2,7 @@
 """
 Created on Fri Apr 23 16:42:02 2021
 
-@author: User
+@author: jonas ort, department of neurosurgery, RWTH AACHEN, medical faculty
 """
 
 #import spikeinterface modules
@@ -33,32 +33,13 @@ import seaborn as sns
 
 from time import strftime
 
-filedirec = r"D:\Files_Reutlingen_Jenny\main_191021extra"
-inputdirectory = r"D:\Files_Reutlingen_Jenny\main_191021extra\191021_extra"
+# main directory of the folder to analyse
+filedirec = r"D:\MEA_DATA_Aachen\ANALYZED\20210510_cortex_div4"
+# sub directory with the actual data
+inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210510_cortex_div4"
+
 os.chdir(inputdirectory)
 
-filelist = glob.glob('*.h5')
-filebase = filename.split('.')[0]
-
-
-timestr = strftime("%d%m%Y")
-outputdirectory = os.path.join(filedirec, '_output_Spikesorting_'+ timestr).replace('\\','/')
-
-probe_file="C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb"
-outputdirectory_SC='D:/Files_Reutlingen_Jenny/main_191021extra/191021_extra_Spikesorting/output_Spykingcirucs'
-
-
-outpath=os.path.join(outputdirectory+'_'+filename.split('.')[0]+'_spikesorting').replace("\\","/")
-try:
-    os.mkdir(outpath)
-except OSError:
-    print ("Creation of the directory %s failed" % outpath)
-else:
-    print ("Successfully created the directory %s " % outpath)
-    
-
-
-os.chdir(outpath)
 
 
 
@@ -68,9 +49,17 @@ os.chdir(outpath)
 
 
 def divide_recording_to_sub(recording, sublength_seconds):
+  
+    '''
+    parameters: recording = recording extractor
+                sublength_seconds = int, how long shall the subrecordings be
+                
+    returns: dictionary with key=str: sec_xxx-xxx, value=subrecording extractor
+    '''
     
     
     subrecording_dic = {}
+    fs = recording.get_sampling_frequency()
     recording_length = recording.get_num_frames()
     recording_seconds = recording_length/fs
     end_frame = int(recording_seconds)
@@ -92,7 +81,17 @@ def divide_recording_to_sub(recording, sublength_seconds):
 
 
 def create_cache_for_subrecordings(subrecording_dic, filebase, outpath):
-
+  
+    '''
+    parameters: 
+        subrecording_dic = dictionary with all subrecordings to be cached
+        filebase = str, name of the based file
+        outpath = directory where files will be directed
+        
+    returns: 
+        print statement after function is finished, will dump and save
+        the cached as .pkl in outpath
+    '''
     for key in subrecording_dic:
         sub_cache = se.CacheRecordingExtractor(
             subrecording_dic[key])
@@ -114,22 +113,43 @@ def create_cache_for_subrecordings(subrecording_dic, filebase, outpath):
 
 
 def load_dumped_subrecordings(directory, filebase):
-
+   
+    '''
+    parameters:
+        diretory = where subrecordings are saved
+        filebase = namebase of the recording to be loaded
+        
+    returns:
+        a dictionary with keys=dictkeys ('sec_xxx-xxx'), values=subrecordings
+        extractors
+    '''
+    beforedirectory = os.getcwd()
+    os.chdir(directory)
     subrecording_dic = {}
     filelist = glob.glob('*.pkl')
     for file in filelist:
         key = file.split(filebase)[1].split('.')[0].split('_recording')[0]
         subrecording_dic[key]=se.load_extractor_from_pickle(file)
-        
+    
+    os.chdir(beforedirectory)
     return subrecording_dic
 
 
 
 def run_spykingcircus_on_sub(subrecording_dic, directory):
     
+    '''
+    parameters:
+        subrecording dic = a dictionary with keys=dictkeys ('sec_xxx-xxx'), 
+        values=subrecordings
+        directory = path where subrecordings are saved
+        
+    returns:
+        a dictionary with key = dictkeys ('sec_xxx-xxx'), values = sortings
 
+    '''
     sorted_dic={}
-    for key in loaded:
+    for key in subrecording_dic:
         outpath_SC=os.path.join(outpath, 'sorted_'+str(key)).replace('\\', '/')
         '''
         try:
@@ -140,7 +160,7 @@ def run_spykingcircus_on_sub(subrecording_dic, directory):
             print ("Successfully created the directory %s " % outpath)
         '''
         sorted_dic[key]=ss.run_spykingcircus(
-            loaded[key], output_folder=outpath_SC)
+            subrecording_dic[key], output_folder=outpath_SC)
 
     return sorted_dic
     
@@ -148,6 +168,13 @@ def run_spykingcircus_on_sub(subrecording_dic, directory):
 
 def load_dumped_sorted_dic(outpath):
 
+    '''
+    parameters: 
+        directory where sortings of spyking circus are saved
+        
+    returns:
+        dictionary with key = dictkeys ('sec_xxx-xxx'), values = sortings
+    '''
     sorted_dic = {}
     filelist = glob.glob('*sorted*')
     for file in filelist:
@@ -165,30 +192,71 @@ def load_dumped_sorted_dic(outpath):
 '''________________________WORKING_SCRIPT___________________________________'''
 
 
-recording_MEA=se.MCSH5RecordingExtractor(
-    os.path.join(inputdirectory, filename)
-    )
+# create the filelist of all .h5 files
+filelist = glob.glob('*.h5')
 
-recording_f = st.preprocessing.bandpass_filter(
-    recording_MEA, freq_min=150, freq_max=5000, filter_type='butter', order=2
-    )
 
-recording_cmr = st.preprocessing.common_reference(
-    recording_f, reference='median'
-    )
+for i in filelist:
+    filename = i
+    print('Working on %s' %filename)
 
-recording_cmrprobe=recording_MEA.load_probe_file(
+
+    filebase = filename.split('__')[1]
+    
+    # for overview when the analysis was performed: create a timestring
+    timestr = strftime("%d%m%Y")
+    outputdirectory = os.path.join(filedirec, '_output_Spikesorting_'+ timestr).replace('\\','/')
+    
     probe_file="C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb"
-    )
-
-subrecords = divide_recording_to_sub(recording_cmrprobe, 300)
-
-create_cache_for_subrecordings(
-    subrecording_dic=subrecords, filebase=filebase, outpath=outpath
-    )
-
-loaded = load_dumped_subrecordings(outpath, filebase)
-
-sorted_dic = run_spykingcircus_on_sub(loaded, outpath)
-sorted_dic = load_dumped_sorted_dic(outpath)
+    #outputdirectory_SC='D:/Files_Reutlingen_Jenny/main_191021extra/191021_extra_Spikesorting/output_Spykingcirucs'
+    
+    # one outpath is created for every datafile
+    outpath=os.path.join(outputdirectory+'_'+filename.split('__')[1]+'_spikesorting').replace("\\","/")
+    try:
+        os.mkdir(outpath)
+    except OSError:
+        print ("Creation of the directory %s failed" % outpath)
+    else:
+        print ("Successfully created the directory %s " % outpath)
+        
+    
+    
+    os.chdir(outpath)
+    
+    
+    '''
+    1. Create subrecordings, Caches, run the spikesorter
+    '''
+    
+    # load in the recordings from the .h5 file
+    recording_MEA=se.MCSH5RecordingExtractor(
+        os.path.join(inputdirectory, filename), stream_id=0)
+    
+    # bandpassfilter the recording
+    recording_f = st.preprocessing.bandpass_filter(
+        recording_MEA, freq_min=150, freq_max=5000, filter_type='butter', order=2)
+    
+    # common reference
+    recording_cmr = st.preprocessing.common_reference(
+        recording_f, reference='median')
+    
+    # load the probe file
+    recording_cmrprobe=recording_MEA.load_probe_file(
+        probe_file="C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb")
+    
+    # divide the recording into subrecords, subrecords is a dictionary
+    subrecords = divide_recording_to_sub(recording_cmrprobe, 140)
+    
+    # create the cache for the subrecordings
+    create_cache_for_subrecordings(
+        subrecording_dic=subrecords, filebase=filebase, outpath=outpath)
+    
+    loaded = load_dumped_subrecordings(outpath, filebase)
+    
+    sorted_dic = run_spykingcircus_on_sub(loaded, outpath)
+    
+    # the dic can be loaded 
+    sorted_dic = load_dumped_sorted_dic(outpath)
+    
+print('Finished the sorting-process.')
     

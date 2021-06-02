@@ -62,7 +62,7 @@ ________________________DIRECTORIES_%_IMPORTS___________________________________
 
 # adjust the directories first!
 scriptdirectory = "C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = "D:/MEA_DATA_Aachen/PREPROCESSED/20210401_hippocampus_div7_h5"
+inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210510_cortex_div4"
 
 
 
@@ -434,6 +434,8 @@ for file in filelist:
     print('Working on file: ' +filename)
     channel_raw_data = McsPy.McsData.RawData(filename)
     get_channel_infos(inputdirectory, filename)
+    
+    # the stream needs to be changed because MCS hates me
     analog_stream_0 = channel_raw_data.recordings[0].analog_streams[0]
     stream = analog_stream_0
     for key in stream.channel_infos.keys():
@@ -450,9 +452,10 @@ for file in filelist:
     np_analog_stream_0_data = np.transpose(
         channel_raw_data.recordings[0].analog_streams[0].channel_data
         )
+     # the stream needs to be changed because MCS hates me
     np_analog_for_filter = np.transpose(np_analog_stream_0_data)
     np_analog_stream_1_data = np.transpose(
-        channel_raw_data.recordings[0].analog_streams[1].channel_data
+        channel_raw_data.recordings[0].analog_streams[0].channel_data
         )
     np_analog_stream_1_data_transpose = np.transpose(np_analog_stream_1_data)
     
