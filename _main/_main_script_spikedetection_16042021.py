@@ -62,7 +62,7 @@ ________________________DIRECTORIES_%_IMPORTS___________________________________
 
 # adjust the directories first!
 scriptdirectory = "C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210510_cortex_div4"
+inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210708_mouse_cortex_div_"
 
 
 

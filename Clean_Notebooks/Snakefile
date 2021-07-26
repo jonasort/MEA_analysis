@@ -1,0 +1,8 @@
+
+rule:
+    input: 'fileA.text'
+    output: 'fileB.text'
+    shell: 'cp fileA.text'
+rule:
+    output: 'fileA.txt'
+    shell: 'touch fileA.txt'
