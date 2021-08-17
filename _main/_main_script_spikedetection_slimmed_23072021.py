@@ -48,7 +48,7 @@ DIRECTORIES
 
 # adjust the directories first!
 scriptdirectory = "C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210510_cortex_div4"
+inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210520_cortex_div14"
 
 
 
@@ -80,6 +80,7 @@ import bokeh.plotting
 from bokeh.palettes import Spectral11
 from scipy.signal import butter, lfilter, freqz, find_peaks, correlate, gaussian
 from scipy import stats
+from scipy import signal
 from IPython.core.interactiveshell import InteractiveShell
 InteractiveShell.ast_node_interactivity = 'all'
 import os
@@ -443,6 +444,7 @@ artefactsdic_MAD={}
 cutouts_dic ={} 
 keylist = []
 
+
 # for-loop files
 for file in filelist:
     resting_spikedic={}
@@ -542,7 +544,7 @@ for file in filelist:
         spikes = spikes + first_recording_timepoint/tick
         channellabel = labellist[i]
         spikedic_MAD[channellabel] = spikes
-        artefactsdic_MAD[channellabel] = artefacts
+        #artefactsdic_MAD[channellabel] = artefacts
         print(channellabel)
         
         
@@ -598,11 +600,7 @@ for file in filelist:
             spikedic_seconds[key]=sec_array
     spikearray_seconds = np.asarray(list(spikedic_seconds.values()))  
     
-    # plot the rasterplot
-    fig, ax = plt.subplots(1,1, figsize=(30,10))
-    ax = plt.eventplot(spikearray_seconds, linewidths=0.7, linelengths=0.5, colors='black')
-    #fig.savefig(str(filebase)+'_rasterplot.png', dpi=300)
-    
+
 
     # get a 1-D array with every detected spike
     scale_factor_for_milisecond = 1e-03
@@ -626,22 +624,8 @@ for file in filelist:
     # make a histogram 
     full_spikes_binned = np.histogram(full_spikes_seconds, bins)[0]
     
-    # dataframe with moving average
-    df= pd.DataFrame({'Spikes':full_spikes_binned}) #aus Network_ISI wird ein pdDF um die weiteren Schritte durchführen zu können
-    df["MA"] = df.Spikes.rolling(10).mean()
-    df['STD'] = df.Spikes.std()
-    df['2*STD'] = df.Spikes.std()*2
-    fig = df[['MA']].plot(color='black', linewidth=.5, figsize=(30,6), title="Moving Average All Spikes with %s seconds bins" %binsize)
-
-    
-    fig, ((ax1),(ax2)) = plt.subplots(2,1, figsize=(30,10))
-    ax2 = plt.eventplot(spikearray_seconds, linewidths=0.7, linelengths=0.5, colors='black')
-    ax1 = plt.plot(ma_fr_gau)
-    
+   
     #trial of population burst plot as inspired by Andrea Corna
-    
-    
-    
     bins = int(timelengthrecording_s / binsize)+1
     
     firing_rate_histogram = np.histogram(full_spikes_seconds, bins=bins)
@@ -668,22 +652,29 @@ for file in filelist:
     # we arrange this mean in an array for plotting
     mean_ma_fr_gau = np.mean(ma_fr_gau)
     network_burst_threshold = mean_ma_fr_gau
+    
+    
+    # to compare the amount of network bursts over different recordings we want the threshold
+    # to be form the baseline file
+    #baselinefile = filelist[1]
+    
+    #baseline_file_threshold = np.load(baselinefile+'_info_dict.npy',
+     #                                 allow_pickle = True).item()['network_burst_threshold']
+    
+    
+    # Cave: funktioniert so nur, wenn das File Komplett durchläuft
+    #if file == filelist[0]:
+     #   network_burst_threshold = mean_ma_fr_gau
+    #else:
+     #   network_burst_threshold = baseline_file_threshold
+
+    
     shape_for_threshold = np.shape(ma_fr_gau)
     network_burst_threshold_array = np.full(shape_for_threshold, network_burst_threshold)
-    
-    fig, ax = plt.subplots(1,1, figsize=(30,10))
-    ax.plot(firing_rate, color='blue')
-    ax.plot(ma_fr_gau, color = 'black')
-    ax.plot(network_burst_threshold_array)
-    ax.set_title('Smoothed Spikes per 3ms bin')
-    ax.set_xlabel('Bins 3ms')
-    
-    fig.savefig('trial_network_burst.png', dpi=300)
     
 
     # now we identify the burts from the network and will extract an array with 
     # tuples containing the burst start and end times
-    
     bursts= []
     burst_start = []
     burst_seconds_start = []
@@ -721,53 +712,36 @@ for file in filelist:
     
     
     
-
+    # plot for firing rate and identified bursting activity
+    
+    fig = plt.figure(figsize = (20,8))
+    gs = fig.add_gridspec(2, hspace = 0, height_ratios=[1,5])
+    axs = gs.subplots(sharex=False, sharey=False)
+    axs[0].plot(ma_fr_gau, color= 'black')
+    axs[0].set_ylabel('Firing Rate [Hz]')
+    axs[1].eventplot(spikearray_seconds, color = 'black', linewidths = 0.2,
+                     linelengths = 0.5, colors = 'black')
+    axs[1].set_ylabel('Relevant Channels')
+    
+    for ax in axs:
+        for i in bursts_seconds:
+            axs[1].axvspan(i[0], i[1], facecolor = '#5B89A6', alpha = 0.3)
+    fig.savefig('raster_firingrate_plot.png', dpi=300)
     
     
     
-    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(20,10), sharex=True)
-    ax1 = plt.eventplot(spikearray_seconds, linewidths=0.7, linelengths=0.5, colors='black')
-    #ax2 = plt.plot(ma_fr_gau)
-    for i in bursts_seconds:
-        ax1 = plt.axvspan(i[0], i[1], facecolor='#5B89A6', alpha=0.5)
-    #ax2 = plt.plot(ma_fr_gau)
-    fig.savefig('trial_4.png', dpi=300)
     
+    # lastly we save important information of the recording into a dictionary
+    # this way, we can easily access them for further analysis
     
+    info_dic = {}
+    info_dic['tick']=tick
+    info_dic['timelengthrecording_s']=timelengthrecording_s
+    info_dic['first_recording_timepoint']=first_recording_timepoint
+    info_dic['scale_factor_for_second']=scale_factor_for_second
     
-    
-    
-    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(20,10), sharex=True)
-    ax1 = plt.eventplot(spikearray_seconds, linewidths=0.7, linelengths=0.5, colors='black')
-    ax2 = plt.plot(ma_fr_gau)
-    for i in bursts:
-        ax2 = plt.axvspan(i[0], i[1], facecolor='#5B89A6', alpha=0.3)
-    #ax2 = plt.plot(ma_fr_gau)
-    fig.savefig('trial_5.png', dpi=300)
-    
-    
-     
-    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(20,10), sharex=True)
-    ax1 = plt.plot(ma_fr_gau)
-    ax2 = plt.eventplot(spikearray_seconds, linewidths=0.7, linelengths=0.5, colors='black')
-    for i in bursts:
-        ax2 = plt.axvspan(i[0], i[1], facecolor='#5B89A6', alpha=0.3, ax=ax1)
-    #ax2 = plt.plot(ma_fr_gau)
-    fig.savefig('trial_5.png', dpi=300)
-        
-
-    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(20,10))
-    ax1 = plt.plot(ma_fr_gau)
-    
-    ax1 = plt.eventplot(spikearray_seconds, linewidths=0.7, linelengths=0.5, colors='black')
-    for i in bursts_seconds:
-        ax1 = plt.axvspan(i[0], i[1], facecolor='#5B89A6', alpha=0.5)
-    
-    fig.savefig('trial_4.png', dpi=300)
-
-    
-    
-    
+    if file == filelist[0]:
+        info_dic['network_burst_threshold_basline']=network_burst_threshold
     
     
     
@@ -777,19 +751,17 @@ for file in filelist:
     np.save(filename+'_spikes_MAD_dict.npy', spikedic_MAD) 
     np.save(filename+'_wavecutouts_dict.npy', cutouts_dic)
     #np.save(filename+'_firingrate_dict.npy', frdic)
+    np.save(filename+'_info_dict.npy', info_dic)
     os.chdir(inputdirectory)
     
     
-    outpath = r'D:\MEA_DATA_Aachen\ANALYZED\2021-05-10_cortex_div4_hCSF_ID039_nodrug_spont_1_analyzed_on_23072021'
-    os.chdir(outpath)
-    spikedic_MAD = np.load(filename+'_spikes_MAD_dict.npy', allow_pickle=True).item()
+    #outpath = r'D:\MEA_DATA_Aachen\ANALYZED\2021-05-10_cortex_div4_hCSF_ID039_nodrug_spont_1_analyzed_on_23072021'
+    #os.chdir(outpath)
+    #spikedic_MAD = np.load(filename+'_spikes_MAD_dict.npy', allow_pickle=True).item()
     
     
 
-
-
-for i, x in enumerate(fr_gau,)
-
+print('Finished. You can close me, Henner.')
 
 
 

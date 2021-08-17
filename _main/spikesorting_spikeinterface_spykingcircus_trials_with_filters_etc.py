@@ -34,9 +34,9 @@ import seaborn as sns
 from time import strftime
 
 # main directory of the folder to analyse
-filedirec = r"D:\MEA_DATA_Aachen\ANALYZED\20210708_mouse_cortex_div_"
+filedirec = r"D:\MEA_DATA_Aachen\ANALYZED\20210514_cortex_div8"
 # sub directory with the actual data
-inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210708_mouse_cortex_div_"
+inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210514_cortex_div8"
 
 os.chdir(inputdirectory)
 
@@ -258,7 +258,7 @@ for i in filelist:
         probe_file="C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb")
     
     # divide the recording into subrecords, subrecords is a dictionary
-    subrecords = divide_recording_to_sub(recording_cmrprobe, 120)
+    subrecords = divide_recording_to_sub(recording_cmrprobe, 130)
     
     # create the cache for the subrecordings
     create_cache_for_subrecordings(
