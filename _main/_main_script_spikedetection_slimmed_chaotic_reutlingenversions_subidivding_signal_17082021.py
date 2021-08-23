@@ -48,7 +48,7 @@ DIRECTORIES
 
 # adjust the directories first!
 scriptdirectory = "C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = r"D:\Files_Reutlingen_Jenny\main_191023\191023"
+inputdirectory = r"D:\Files_Reutlingen_Jenny\main_191021extra\191021_extra"
 
 
 
@@ -104,14 +104,14 @@ from plot_signal_and_spikes import plot_signal_and_spikes_from_bandpassfiltereds
 import time
 import glob
 
-from numba import jit
+
 
 
 
 
 
 timestr = time.strftime("%d%m%Y")
-outputdirectory=r"D:\Files_Reutlingen_Jenny\main_191023\191023_paper"
+outputdirectory=r"D:\Files_Reutlingen_Jenny\main_191021extra\191021_paper"
 
 
 
@@ -422,6 +422,9 @@ def plot_waveforms(cutouts, fs, pre, post, n=100, color='k', show=True):
 Actual Script
 '''
 
+# to save memory:
+plt.ioff()
+
 
 # set filter cuts in Hz
 lowcut = 150
@@ -500,11 +503,15 @@ for file in filelist:
     starting_point = 0
     stopping_point = 0
     while starting_point < timelengthrecording_s:
-        if starting_point + dividing_seconds >= timelengthrecording_s:
+        if starting_point + dividing_seconds > int(timelengthrecording_s):
             stopping_point = int(timelengthrecording_s)
+            print('first statement')
         else:
             stopping_point = stopping_point + dividing_seconds
+            print('second statement')
         signal_cuts.append((starting_point, stopping_point))
+        
+        print('the points: ' + str(starting_point) + ' __ ' + str(stopping_point))
         
         # set the window one step further:
         starting_point = stopping_point
@@ -558,7 +565,7 @@ for file in filelist:
             artefact_threshold = -8* noise_mad
             crossings = detect_threshold_crossings(
                 bandpassfilteredsignal, sampling_frequency, 
-                threshold, dead_time=0.003
+                threshold, dead_time=0.001
                 )
             spikes=align_to_minimum(
                 bandpassfilteredsignal, fs, crossings, search_range=0.003, 
@@ -568,14 +575,16 @@ for file in filelist:
             if len(spikes) < 10:
                 artefact_crossings = detect_threshold_crossings(
                     bandpassfilteredsignal, sampling_frequency, 
-                    artefact_threshold, dead_time=0.003
+                    artefact_threshold, dead_time=0.001
                     )
                 artefacts = align_to_minimum(
                     bandpassfilteredsignal, fs, artefact_crossings, search_range=0.003, 
                     first_time_stamp=first_recording_timepoint
                     )
             
-            spikes = spikes + first_recording_timepoint/tick
+            
+            raw_spikes = spikes + first_recording_timepoint/tick
+            spikes = raw_spikes + int(time_in_sec[0]/(scale_factor_for_second*tick))
             channellabel = labellist[i]
             spikedic_MAD[channellabel] = spikes
             #artefactsdic_MAD[channellabel] = artefacts
@@ -585,7 +594,7 @@ for file in filelist:
             # if there are detected spikes get the waveforms, plot the channel and waveforms and save
             if len(spikes > 0):
                 cutouts = extract_waveforms(
-                        bandpassfilteredsignal, sampling_frequency, spikes, 
+                        bandpassfilteredsignal, sampling_frequency, raw_spikes, 
                         pre, post
                         )
                 cutouts_dic[channellabel] = cutouts
@@ -605,6 +614,7 @@ for file in filelist:
                 
                 fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
                 plt.close(fig) 
+                plt.clf()
                                        
                 #figure 2: waveforms 
                 fig2, ax2 = plt.subplots(1, 1, figsize=(12,6))
@@ -622,6 +632,7 @@ for file in filelist:
         
                 fig2.savefig(filebase+'_waveforms_'+channellabel+'_.png')
                 plt.close(fig2)
+                plt.clf()
                 
                 '''
                 delete cutouts dic to spare memory usage
@@ -686,7 +697,7 @@ for file in filelist:
         # gaussian smmothing fo the firing rate and moving average
         fr_gau = gaussian_smoothing(firing_rate)
         ma_fr_gau = np.convolve(fr_gau, np.ones(N)/N, mode='same')
-        plt.plot(ma_fr_gau)
+        #plt.plot(ma_fr_gau)
         
         
         
@@ -770,6 +781,7 @@ for file in filelist:
             for i in bursts_seconds:
                 axs[1].axvspan(i[0], i[1], facecolor = '#5B89A6', alpha = 0.3)
         fig.savefig('raster_firingrate_plot.png', dpi=300)
+        plt.close(fig)
         
         
         
