@@ -589,7 +589,7 @@ for file in filelist:
             
             
             # if there are detected spikes get the waveforms, plot the channel and waveforms and save
-            if len(spikes > 0):
+            if len(spikes) > 0:
                 cutouts = extract_waveforms(
                         bandpassfilteredsignal, sampling_frequency, raw_spikes, 
                         pre, post
