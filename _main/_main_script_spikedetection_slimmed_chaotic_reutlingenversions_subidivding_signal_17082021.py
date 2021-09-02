@@ -48,7 +48,7 @@ DIRECTORIES
 
 # adjust the directories first!
 scriptdirectory = "C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = r"D:\Files_Reutlingen_Jenny\19-04-25"
+inputdirectory = r"D:\Files_Reutlingen_Jenny\main_191021\191021_hdf5"
 
 
 """
@@ -110,7 +110,7 @@ import glob
 
 
 timestr = time.strftime("%d%m%Y")
-outputdirectory=r"D:\Files_Reutlingen_Jenny\19-04-25\190425_paper"
+outputdirectory=r"D:\Files_Reutlingen_Jenny\main_191021\191021_paper"
 
 
 
