@@ -34,9 +34,9 @@ import seaborn as sns
 from time import strftime
 
 # main directory of the folder to analyse
-filedirec = r"D:\MEA_DATA_Aachen\ANALYZED\20210514_cortex_div8"
+filedirec = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_sorted"
 # sub directory with the actual data
-inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210514_cortex_div8"
+inputdirectory = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_h5"
 
 os.chdir(inputdirectory)
 
@@ -206,7 +206,7 @@ for i in filelist:
     print('Working on %s' %filename)
 
 
-    filebase = filename.split('__')[1]
+    filebase = filename.split('.')[0] #.split('__')[1]
     
     # for overview when the analysis was performed: create a timestring
     timestr = strftime("%d%m%Y")
@@ -216,7 +216,10 @@ for i in filelist:
     #outputdirectory_SC='D:/Files_Reutlingen_Jenny/main_191021extra/191021_extra_Spikesorting/output_Spykingcirucs'
     
     # one outpath is created for every datafile
-    outpath=os.path.join(outputdirectory+'_'+filename.split('__')[1]+'_spikesorting').replace("\\","/")
+    #outpath=os.path.join(outputdirectory+'_'+filename.split('__')[1]+'_spikesorting').replace("\\","/")
+    
+    # for Reutlingen
+    outpath=os.path.join(outputdirectory+'_'+filebase+'_spikesorting').replace("\\","/")
     try:
         os.mkdir(outpath)
     except OSError:
@@ -258,7 +261,7 @@ for i in filelist:
         probe_file="C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb")
     
     # divide the recording into subrecords, subrecords is a dictionary
-    subrecords = divide_recording_to_sub(recording_cmrprobe, 130)
+    subrecords = divide_recording_to_sub(recording_cmrprobe, 300)
     
     # create the cache for the subrecordings
     create_cache_for_subrecordings(
