@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2021-10-01T15:20:28.891Z" agent="5.0 (Windows)" etag="OGcXX9p71A2CxYVaDBdc" version="15.2.9" type="github">
+<mxfile host="app.diagrams.net" modified="2021-10-01T16:19:21.111Z" agent="5.0 (Windows)" etag="68tjEnD1IJN8QKftDYzi" version="15.2.9" type="github">
   <diagram id="vBnOlz8iTsaYxyx_wYCy" name="Page-1">
     <mxGraphModel dx="507" dy="1140" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -31,7 +31,7 @@
         <mxCell id="hhfGfqor65zBzNXSn3MG-8" value="Infos_Recording" style="swimlane;fontColor=#0000FF;" parent="1" vertex="1">
           <mxGeometry x="140" y="690" width="260" height="332" as="geometry" />
         </mxCell>
-        <mxCell id="hhfGfqor65zBzNXSn3MG-9" value="info_dics_subrecordings (dictionary)&#xa;&#xa;&#xa;recording_length (string)&#xa;&#xa;recording_date (string)&#xa;&#xa;scale_factor_for_second (float)&#xa;&#xa;tick (int)&#xa;&#xa;sampling_frequency (float)&#xa;&#xa;medium (string)&#xa;&#xa;stimulation (string)&#xa;&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="hhfGfqor65zBzNXSn3MG-8" vertex="1">
+        <mxCell id="hhfGfqor65zBzNXSn3MG-9" value="info_dics_subrecordings (dictionary)&#xa;&#xa;&#xa;recording_length (string)&#xa;&#xa;recording_date (string)&#xa;&#xa;scale_factor_for_second (float)&#xa;&#xa;tick (int)&#xa;&#xa;sampling_frequency (float)&#xa;&#xa;medium (string)&#xa;&#xa;stimulation (string)&#xa;&#xa;timelengthrecording_s&#xa;&#xa;&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="hhfGfqor65zBzNXSn3MG-8" vertex="1">
           <mxGeometry y="30" width="260" height="302" as="geometry" />
         </mxCell>
         <mxCell id="hhfGfqor65zBzNXSn3MG-10" value="Infos_Analysis" style="swimlane;fontColor=#0000FF;" parent="1" vertex="1">
@@ -80,7 +80,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="A6L8o1R3aStiilXjUK1z-1" value="network_bursts" style="swimlane;fontColor=#CC0000;startSize=23;" vertex="1" parent="1">
+        <mxCell id="A6L8o1R3aStiilXjUK1z-1" value="network_bursts_seconds" style="swimlane;fontColor=#CC0000;startSize=23;" vertex="1" parent="1">
           <mxGeometry x="150" y="2360" width="340" height="120" as="geometry" />
         </mxCell>
         <mxCell id="A6L8o1R3aStiilXjUK1z-2" value="list of tuples, in seconds&#xa;&#xa;all bursts where the moving averaged gaussian smoothed&#xa;fr is abouve the mean + 1 std of the mean firing rate for the&#xa;recording&#xa;&#xa;&#xa;&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="A6L8o1R3aStiilXjUK1z-1">
@@ -110,8 +110,8 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="A6L8o1R3aStiilXjUK1z-9" value="isi_dic" style="swimlane;fontColor=#CC0000;startSize=23;" vertex="1" parent="1">
-          <mxGeometry x="150" y="1720" width="270" height="102" as="geometry" />
+        <mxCell id="A6L8o1R3aStiilXjUK1z-9" value="isi_dictionary" style="swimlane;fontColor=#CC0000;startSize=23;" vertex="1" parent="1">
+          <mxGeometry x="151" y="1720" width="270" height="102" as="geometry" />
         </mxCell>
         <mxCell id="A6L8o1R3aStiilXjUK1z-10" value="keys = channellabeles&#xa;&#xa;values = list of interspike intervals in ms&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="A6L8o1R3aStiilXjUK1z-9">
           <mxGeometry x="20" y="32" width="250" height="88" as="geometry" />
@@ -145,6 +145,36 @@
               <mxPoint x="90" y="1191" />
             </Array>
           </mxGeometry>
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-17" value="lfp" style="swimlane;fontColor=#6600CC;startSize=23;" vertex="1" parent="1">
+          <mxGeometry x="150" y="2680" width="270" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-23" value="&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="A6L8o1R3aStiilXjUK1z-17">
+          <mxGeometry x="10" y="30" width="250" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-19" value="bursts" style="swimlane;fontColor=#6600CC;startSize=23;" vertex="1" parent="1">
+          <mxGeometry x="150" y="2810" width="270" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-24" value="&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="A6L8o1R3aStiilXjUK1z-19">
+          <mxGeometry x="5" y="30" width="250" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-20" value="burst_connections" style="swimlane;fontColor=#6600CC;startSize=23;" vertex="1" parent="1">
+          <mxGeometry x="151" y="2940" width="270" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-25" value="&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="A6L8o1R3aStiilXjUK1z-20">
+          <mxGeometry x="9" y="30" width="250" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-21" value="burst_graphs" style="swimlane;fontColor=#6600CC;startSize=23;" vertex="1" parent="1">
+          <mxGeometry x="151" y="3070" width="270" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-26" value="&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="A6L8o1R3aStiilXjUK1z-21">
+          <mxGeometry x="4" y="30" width="250" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-22" value="burst_graphs" style="swimlane;fontColor=#6600CC;startSize=23;" vertex="1" parent="1">
+          <mxGeometry x="150" y="3210" width="270" height="118" as="geometry" />
+        </mxCell>
+        <mxCell id="A6L8o1R3aStiilXjUK1z-27" value="&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="A6L8o1R3aStiilXjUK1z-22">
+          <mxGeometry x="5" y="30" width="250" height="88" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
