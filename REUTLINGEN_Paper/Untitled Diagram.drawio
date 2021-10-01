@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2021-10-01T14:45:10.306Z" agent="5.0 (Windows)" etag="jMTozbc8_Ii6fhHjznsL" version="15.2.9" type="github">
+<mxfile host="app.diagrams.net" modified="2021-10-01T15:20:28.891Z" agent="5.0 (Windows)" etag="OGcXX9p71A2CxYVaDBdc" version="15.2.9" type="github">
   <diagram id="vBnOlz8iTsaYxyx_wYCy" name="Page-1">
     <mxGraphModel dx="507" dy="1140" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -51,7 +51,7 @@
         <mxCell id="hhfGfqor65zBzNXSn3MG-13" value="Basics" style="swimlane;fontColor=#CC0000;startSize=23;" parent="1" vertex="1">
           <mxGeometry x="150" y="1960" width="310" height="332" as="geometry" />
         </mxCell>
-        <mxCell id="hhfGfqor65zBzNXSn3MG-17" value="active_channels (int)&#xa;&#xa;mean_fr_whole_recording (float)&#xa;&#xa;relevant_factor&#xa;&#xa;network_burst_threshold&#xa;&#xa;mean_ma_fr_gau (float)&#xa;    mean of the moving averaged for the whole slice&#xa;&#xa;network_CMA_channel Burst threshold&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;&#xa;0" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="hhfGfqor65zBzNXSn3MG-13" vertex="1">
+        <mxCell id="hhfGfqor65zBzNXSn3MG-17" value="active_channels (int)&#xa;&#xa;mean_fr_whole_recording (float)&#xa;&#xa;relevant_factor&#xa;&#xa;network_burst_threshold&#xa;&#xa;mean_ma_fr_gau (float)&#xa;    mean of the moving averaged for the whole slice&#xa;&#xa;network_CMA_channel Burst threshold&#xa;&#xa;&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="hhfGfqor65zBzNXSn3MG-13" vertex="1">
           <mxGeometry x="5" y="30" width="300" height="302" as="geometry" />
         </mxCell>
         <mxCell id="hhfGfqor65zBzNXSn3MG-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontColor=#CC0000;entryX=0;entryY=0;entryDx=0;entryDy=0;exitX=-0.007;exitY=0.136;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="hhfGfqor65zBzNXSn3MG-4" target="hhfGfqor65zBzNXSn3MG-16" edge="1">
@@ -137,9 +137,13 @@
         <mxCell id="A6L8o1R3aStiilXjUK1z-15" value="layerdic (dict): key = layer, value = channellabels&#xa;&#xa;inverted_layerdic (dict)&#xa;    key=channellabel, value = layer&#xa;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="A6L8o1R3aStiilXjUK1z-14">
           <mxGeometry y="30" width="260" height="302" as="geometry" />
         </mxCell>
-        <mxCell id="A6L8o1R3aStiilXjUK1z-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.005;exitY=0.031;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="hhfGfqor65zBzNXSn3MG-4">
+        <mxCell id="A6L8o1R3aStiilXjUK1z-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.005;exitY=0.031;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.085;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="hhfGfqor65zBzNXSn3MG-4" target="A6L8o1R3aStiilXjUK1z-14">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="100" y="474" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="90" y="309" />
+              <mxPoint x="90" y="1191" />
+            </Array>
           </mxGeometry>
         </mxCell>
       </root>
