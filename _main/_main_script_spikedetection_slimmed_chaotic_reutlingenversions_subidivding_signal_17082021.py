@@ -48,7 +48,7 @@ DIRECTORIES
 
 # adjust the directories first!
 scriptdirectory = "C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = r"D:\Files_Reutlingen_Jenny\main_191021\191021_hdf5"
+inputdirectory = r"D:\Files_Reutlingen_Jenny\19-04-26"
 
 
 """
@@ -110,7 +110,7 @@ import glob
 
 
 timestr = time.strftime("%d%m%Y")
-outputdirectory=r"D:\Files_Reutlingen_Jenny\main_191021\191021_paper"
+outputdirectory=r"D:\Files_Reutlingen_Jenny\19-04-26\19-04-26_paper"
 
 
 
@@ -590,46 +590,51 @@ for file in filelist:
             
             # if there are detected spikes get the waveforms, plot the channel and waveforms and save
             if len(spikes) > 0:
-                cutouts = extract_waveforms(
-                        bandpassfilteredsignal, sampling_frequency, raw_spikes, 
-                        pre, post
-                        )
-                cutouts_dic[channellabel] = cutouts
+                while True:
+                    try:
+                        cutouts = extract_waveforms(
+                                bandpassfilteredsignal, sampling_frequency, raw_spikes, 
+                                pre, post
+                                )
+                        cutouts_dic[channellabel] = cutouts
+                        
+                        
+                        plt.style.use("seaborn-white")
+                        
+                        
+                        # figure 1: signal with threshold
+                        fig, ax = plt.subplots(1, 1, figsize=(20, 10))
+                        ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#1E91D9")
+                        ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
+                        ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
+                        ax = plt.title('Channel %s' %channellabel)
+                        ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
+                        ax = plt.ylabel('µ volt')
+                        
+                        fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
+                        plt.close(fig) 
+                        plt.clf()
+                                               
+                        #figure 2: waveforms 
+                        fig2, ax2 = plt.subplots(1, 1, figsize=(12,6))
+                        #ax2 is a plot of the waveform cutouts
+                        n = 100
+                        n = min(n, cutouts.shape[0])
+                        time_in_us = np.arange(-pre*1000, post*1000, 1e3/fs)
+                        cutout_mean = np.mean(cutouts, axis=0)
+                        for i in range(n):
+                            ax2 = plt.plot(time_in_us, cutouts[i,]*1e6, color='black', linewidth=1, alpha=0.3)
+                            ax2 = plt.plot(time_in_us, cutout_mean*1e6, color="red", linewidth=1, alpha=0.3)
+                            ax2 = plt.xlabel('Time (%s)' % ureg.ms)
+                            ax2 = plt.ylabel('Voltage (%s)' % ureg.uV)
+                            ax2 = plt.title('Cutouts of Channel %s' %channellabel)
                 
-                
-                plt.style.use("seaborn-white")
-                
-                
-                # figure 1: signal with threshold
-                fig, ax = plt.subplots(1, 1, figsize=(20, 10))
-                ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#1E91D9")
-                ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
-                ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
-                ax = plt.title('Channel %s' %channellabel)
-                ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
-                ax = plt.ylabel('µ volt')
-                
-                fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
-                plt.close(fig) 
-                plt.clf()
-                                       
-                #figure 2: waveforms 
-                fig2, ax2 = plt.subplots(1, 1, figsize=(12,6))
-                #ax2 is a plot of the waveform cutouts
-                n = 100
-                n = min(n, cutouts.shape[0])
-                time_in_us = np.arange(-pre*1000, post*1000, 1e3/fs)
-                cutout_mean = np.mean(cutouts, axis=0)
-                for i in range(n):
-                    ax2 = plt.plot(time_in_us, cutouts[i,]*1e6, color='black', linewidth=1, alpha=0.3)
-                    ax2 = plt.plot(time_in_us, cutout_mean*1e6, color="red", linewidth=1, alpha=0.3)
-                    ax2 = plt.xlabel('Time (%s)' % ureg.ms)
-                    ax2 = plt.ylabel('Voltage (%s)' % ureg.uV)
-                    ax2 = plt.title('Cutouts of Channel %s' %channellabel)
-        
-                fig2.savefig(filebase+'_waveforms_'+channellabel+'_.png')
-                plt.close(fig2)
-                plt.clf()
+                        fig2.savefig(filebase+'_waveforms_'+channellabel+'_.png')
+                        plt.close(fig2)
+                        plt.clf()
+                    except AttributeError:
+                        print('An Attribute Error was raised.')
+                        pass
                 
                 '''
                 delete cutouts dic to spare memory usage
