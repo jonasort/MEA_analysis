@@ -47,13 +47,11 @@ DIRECTORIES
 """
 
 # adjust the directories first!
-
 scriptdirectory = r"C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_h5"
+inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210712_mouse_cortex_divx"
 
-output_directory = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_paper\analysis_01_HCx_GFP_B_aCSF_base"
-filename = "01_HCx_GFP_B_aCSF_base"
-
+outputdirectory = r"D:\MEA_DATA_Aachen\ANALYZED\2021-07-12_mouse_cortex_Karen"
+#filename = "01_HCx_GFP_B_aCSF_base"
 """
 IMPORTS
 """
@@ -113,7 +111,7 @@ import glob
 
 
 timestr = time.strftime("%d%m%Y")
-outputdirectory=r"D:\Files_Reutlingen_Jenny\19-04-24\19-04-24_paper\spike_extraction_threshold"
+#outputdirectory=r"D:\Files_Reutlingen_Jenny\19-04-24\19-04-24_paper\spike_extraction_threshold"
 
 
 
@@ -494,7 +492,7 @@ def lfp_crossing_detection(lowpass_filtered_signal, lfp_threshold, minimal_lengt
         stop = 0
         if (lowpass_filtered_signal[i] < -lfp_threshold) and (lowpass_filtered_signal[i-1] >= -lfp_threshold):
             start = i
-            while lowpass_filtered_signal[i] < -lfp_threshold:
+            while (lowpass_filtered_signal[i] < -lfp_threshold) and (i < len(lowpass_filtered_signal)-1):
                 stop = i
                 i += 1
             # filter for at least 50ms  of LFP deviation
@@ -515,7 +513,7 @@ def lfp_crossing_detection(lowpass_filtered_signal, lfp_threshold, minimal_lengt
         stop = 0
         if (lowpass_filtered_signal[i] > lfp_threshold) and (lowpass_filtered_signal[i-1] <= lfp_threshold):
             start = i
-            while lowpass_filtered_signal[i] > lfp_threshold:
+            while (lowpass_filtered_signal[i] > lfp_threshold) and (i < len(lowpass_filtered_signal)-1):
                 stop = i
                 i += 1
             # filter for at least 50ms  of LFP deviation
@@ -552,11 +550,11 @@ pre = 0.001 # 1 ms
 post= 0.002 # 2 ms
 
 # divide recording in n seconds long subrecordings
-dividing_seconds = 120
+dividing_seconds = 130
 
 # get filelist
 os.chdir(inputdirectory)
-filelist= glob.glob("*.h5")
+filelist= glob.glob("*spont_1*.h5")
 
 
 resting_spikedic={}
@@ -579,9 +577,10 @@ for file in filelist:
     cutouts_dic ={} 
     keylist = []
     filename = file
-    #filedatebase = filename.split('T')[0]
-    #filenamebase = filename.split('__')[1]
-    filebase = filename.split('.')[0]
+    filedatebase = filename.split('T')[0]
+    filenamebase = filename.split('__')[1]
+    #filebase = filename.split('.')[0]
+    filebase = filedatebase + '_' + filenamebase
     print('Working on file: ' +filename)
     channel_raw_data = McsPy.McsData.RawData(filename)
     get_channel_infos(inputdirectory, filename)
@@ -715,8 +714,9 @@ for file in filelist:
             #artefactsdic_MAD[channellabel] = artefacts
             print('iteration ' + str(i) + 'channel: ' +str(channellabel))
             
-            
-            
+          
+                
+              
             
             '''
             
@@ -735,10 +735,12 @@ for file in filelist:
             
             
             lfp_std = np.std(butter_lowpass_filtered_signal)
-            threshold_LFP = 3*lfp_std
+            lfp_mean = np.mean(butter_lowpass_filtered_signal)
+            threshold_LFP = lfp_std + lfp_mean
             
             
-            down_cross, up_cross, amp_down, amp_up = lfp_crossing_detection(blfs, threshold_LFP)
+            down_cross, up_cross, amp_down, amp_up = lfp_crossing_detection(
+                butter_lowpass_filtered_signal, threshold_LFP)
             
             lfp_ups[channellabel] = up_cross
             lfp_downs[channellabel] = down_cross
@@ -752,205 +754,183 @@ for file in filelist:
             '''
             
             # if there are detected spikes get the waveforms, plot the channel and waveforms and save
-            if len(spikes) > 3 or len(down_cross) >= 1 or len(up_cross)>=1 :
-                
-                #only extract cutouts when they are relevant
-                cutouts = extract_waveforms(
-                        bandpassfilteredsignal, sampling_frequency, raw_spikes, 
-                        pre, post
-                        )
-                cutouts_dic[channellabel] = cutouts
-                
-                
-                plt.style.use("seaborn-white")
-                
-                
-                # figure 1: signal with threshold
-                fig, ax = plt.subplots(1, 1, figsize=(20, 10))
-                ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#45858C")
-                ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
-                ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
-                ax = plt.title('Channel %s' %channellabel)
-                ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
-                ax = plt.ylabel('µ volt')
-                ax = plt.plot(time_in_sec, butter_lowpass_filtered_signal, c='#F29829', linewidth=0.5)
-                for i in down_cross:
-                    ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
-                for i in up_cross:
-                    ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
-                fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
-                plt.close(fig) 
-                plt.clf()
-                                       
-                #figure 2: waveforms 
-                fig2, ax2 = plt.subplots(1, 1, figsize=(12,6))
-                #ax2 is a plot of the waveform cutouts
-                n = 100
-                n = min(n, cutouts.shape[0])
-                time_in_us = np.arange(-pre*1000, post*1000, 1e3/fs)
-                cutout_mean = np.mean(cutouts, axis=0)
-                for i in range(n):
-                    ax2 = plt.plot(time_in_us, cutouts[i,]*1e6, color='black', linewidth=1, alpha=0.3)
-                    ax2 = plt.plot(time_in_us, cutout_mean*1e6, color="red", linewidth=1, alpha=0.3)
-                    ax2 = plt.xlabel('Time (%s)' % ureg.ms)
-                    ax2 = plt.ylabel('Voltage (%s)' % ureg.uV)
-                    ax2 = plt.title('Cutouts of Channel %s' %channellabel)
-        
-                fig2.savefig(filebase+'_waveforms_'+channellabel+'_.png')
-                plt.close(fig2)
-                plt.clf()
-                
-                
-                
-                
-                
-                
-                #figure 3: zoom in on LFPs up
-                
-                for i in up_cross:
-                    start = i[0]
-                    stop = i[1]
-                    start_ind = list(time_in_sec).index(int(start))
-                    stop_ind = list(time_in_sec).index(int(np.ceil((stop))))
+            
+            try:
+            
+            
+            
+                if len(spikes) > 3:
+                    
+                    #only extract cutouts when they are relevant
+                    cutouts = extract_waveforms(
+                            bandpassfilteredsignal, sampling_frequency, raw_spikes, 
+                            pre, post
+                            )
+                    cutouts_dic[channellabel] = cutouts
                     
                     
-                    diff = stop_ind - start_ind
-                    plotstart_ind = start_ind - diff
-                    plotstop_ind = stop_ind + diff
-                    
-                    plotting_spikes = spikes*tick*scale_factor_for_second
-                    spikestart = time_in_sec[plotstart_ind]
-                    spikestop = time_in_sec[plotstop_ind]
-                    
-                    plotting_spikes = [i for i in plotting_spikes if spikestart < i < spikestop]
+                    plt.style.use("seaborn-white")
                     
                     
-                    fig3, ax = plt.subplots(1, 1, figsize=(10, 5))
-                    #ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#048ABF", linewidth = 0.1)
-                    #ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [lfp_mean, lfp_mean], c="#297373", lw=1)
-                    #ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
-                    ax = plt.plot(time_in_sec[plotstart_ind:plotstop_ind], bandpassfilteredsignal[plotstart_ind:plotstop_ind], c='#45858C', linewidth=0.5)
-                    ax = plt.plot(time_in_sec[plotstart_ind:plotstop_ind], butter_lowpass_filtered_signal[plotstart_ind:plotstop_ind], c='#F29829', linewidth=0.5)
-                    ax = plt.plot([time_in_sec[plotstart_ind], time_in_sec[plotstop_ind]], [threshold_LFP, threshold_LFP], c="#A6036D", lw=1)
-                    ax = plt.plot([time_in_sec[plotstart_ind], time_in_sec[plotstop_ind]], [-threshold_LFP, -threshold_LFP], c="#A6036D", lw=1)
-                    ax = plt.plot(plotting_spikes, [threshold-1]*np.asarray(plotting_spikes).shape[0], 'ro', ms=2, c="#D9580D")
+                    # figure 1: signal with threshold
+                    fig, ax = plt.subplots(1, 1, figsize=(20, 10))
+                    ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#45858C")
+                    ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
+                    ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
+                    ax = plt.title('Channel %s' %channellabel)
+                    ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
+                    ax = plt.ylabel('µ volt')
+                    ax = plt.plot(time_in_sec, butter_lowpass_filtered_signal, c='#F29829', linewidth=0.5)
                     for i in down_cross:
                         ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
                     for i in up_cross:
                         ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
-                
-                    ax = plt.title('Channel %s' %channellabel)
-                    ax = plt.xlabel('Time in Sec')
-                    ax = plt.ylabel('µ volt')
-                    
-                    fig3.savefig(
-                        filebase+'_lfp_Up_'+str(start)+'-'+str(stop)+'_'+channellabel+'_.png')
-                    plt.close(fig3)
+                    fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
+                    plt.close(fig) 
                     plt.clf()
-                    
-                #figure4: zoom in LFPs down
+                                           
+                    #figure 2: waveforms 
+                    fig2, ax2 = plt.subplots(1, 1, figsize=(12,6))
+                    #ax2 is a plot of the waveform cutouts
+                    n = 100
+                    n = min(n, cutouts.shape[0])
+                    time_in_us = np.arange(-pre*1000, post*1000, 1e3/fs)
+                    cutout_mean = np.mean(cutouts, axis=0)
+                    for i in range(n):
+                        ax2 = plt.plot(time_in_us, cutouts[i,]*1e6, color='black', linewidth=1, alpha=0.3)
+                        ax2 = plt.plot(time_in_us, cutout_mean*1e6, color="red", linewidth=1, alpha=0.3)
+                        ax2 = plt.xlabel('Time (%s)' % ureg.ms)
+                        ax2 = plt.ylabel('Voltage (%s)' % ureg.uV)
+                        ax2 = plt.title('Cutouts of Channel %s' %channellabel)
+            
+                    fig2.savefig(filebase+'_waveforms_'+channellabel+'_.png')
+                    plt.close(fig2)
+                    plt.clf()
                 
-                for i in down_cross:
-                    start = i[0]
-                    stop = i[1]
-                    start_ind = list(time_in_sec).index(int(start))
-                    stop_ind = list(time_in_sec).index(int(np.ceil((stop))))
+                else:
                     
+                    plt.style.use("seaborn-white")
                     
-                    diff = stop_ind - start_ind
-                    plotstart_ind = start_ind - diff
-                    plotstop_ind = stop_ind + diff
-                    
-                    plotting_spikes = spikes*tick*scale_factor_for_second
-                    spikestart = time_in_sec[plotstart_ind]
-                    spikestop = time_in_sec[plotstop_ind]
-                    
-                    plotting_spikes = [i for i in plotting_spikes if spikestart < i < spikestop]
-                    
-                    
-                    fig3, ax = plt.subplots(1, 1, figsize=(10, 5))
-                    #ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#048ABF", linewidth = 0.1)
-                    #ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [lfp_mean, lfp_mean], c="#297373", lw=1)
+                    # withouth spikes, so we always have an overview file
+                    # figure 1: signal with threshold
+                    fig, ax = plt.subplots(1, 1, figsize=(20, 10))
+                    ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#45858C")
+                    ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
                     #ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
-                    ax = plt.plot(time_in_sec[plotstart_ind:plotstop_ind], bandpassfilteredsignal[plotstart_ind:plotstop_ind], c='#45858C', linewidth=0.5)
-                    ax = plt.plot(time_in_sec[plotstart_ind:plotstop_ind], butter_lowpass_filtered_signal[plotstart_ind:plotstop_ind], c='#F29829', linewidth=0.5)
-                    ax = plt.plot([time_in_sec[plotstart_ind], time_in_sec[plotstop_ind]], [threshold_LFP, threshold_LFP], c="#A6036D", lw=1)
-                    ax = plt.plot([time_in_sec[plotstart_ind], time_in_sec[plotstop_ind]], [-threshold_LFP, -threshold_LFP], c="#A6036D", lw=1)
-                    ax = plt.plot(plotting_spikes, [threshold-1]*np.asarray(plotting_spikes).shape[0], 'ro', ms=2, c="#D9580D")
+                    ax = plt.title('Channel %s' %channellabel)
+                    ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
+                    ax = plt.ylabel('µ volt')
+                    ax = plt.plot(time_in_sec, butter_lowpass_filtered_signal, c='#F29829', linewidth=0.5)
                     for i in down_cross:
                         ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
                     for i in up_cross:
                         ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
-                
-                    ax = plt.title('Channel %s' %channellabel)
-                    ax = plt.xlabel('Time in Sec')
-                    ax = plt.ylabel('µ volt')
-                    
-                     
-                    fig4.savefig(
-                        filebase+'_lfp_Down_'+str(start)+'-'+str(stop)+'_'+channellabel+'_.png')
-                    plt.close(fig3)
+                    fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
+                    plt.close(fig) 
                     plt.clf()
                 
                 
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                fig, ax = plt.subplots(1, 1, figsize=(20, 10))
-                ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#1E91D9")
-                ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
-                ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
-                ax = plt.title('Channel %s' %channellabel)
-                ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
-                ax = plt.ylabel('µ volt')
-                ax = plt.plot(time_in_sec, butter_lowpass_filtered_signal, c='#F29829', linewidth=0.5)
-                for i in down_cross:
-                    ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
-                for i in up_cross:
-                    ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
-                fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
-                plt.close(fig) 
-                plt.clf()
-                                       
-                #figure 2: waveforms 
-                fig2, ax2 = plt.subplots(1, 1, figsize=(12,6))
-                #ax2 is a plot of the waveform cutouts
-                n = 100
-                n = min(n, cutouts.shape[0])
-                time_in_us = np.arange(-pre*1000, post*1000, 1e3/fs)
-                cutout_mean = np.mean(cutouts, axis=0)
-                for i in range(n):
-                    ax2 = plt.plot(time_in_us, cutouts[i,]*1e6, color='black', linewidth=1, alpha=0.3)
-                    ax2 = plt.plot(time_in_us, cutout_mean*1e6, color="red", linewidth=1, alpha=0.3)
-                    ax2 = plt.xlabel('Time (%s)' % ureg.ms)
-                    ax2 = plt.ylabel('Voltage (%s)' % ureg.uV)
-                    ax2 = plt.title('Cutouts of Channel %s' %channellabel)
-        
-                fig2.savefig(filebase+'_waveforms_'+channellabel+'_.png')
-                plt.close(fig2)
-                plt.clf()
-                
-                
-                
-                
-                
-                
-                
-                    
-                '''
-                delete cutouts dic to spare memory usage
-                '''
-                
+                # cutoutdics are deleted to spare memory
                 del cutouts_dic
-           
                 
+                if len(up_cross)>=1: 
+                    
+                    
+                    
+                    
+                    #figure 3: zoom in on LFPs up
+                    
+                    for i in up_cross:
+                        start = i[0]
+                        stop = i[1]
+                        start_ind = list(time_in_sec).index(int(start))
+                        stop_ind = list(time_in_sec).index(int(np.ceil((stop))))
+                        
+                        
+                        diff = stop_ind - start_ind
+                        plotstart_ind = max(0, start_ind - diff)
+                        plotstop_ind = min(stop_ind + diff, len(time_in_sec)-1)
+                        
+                        plotting_spikes = spikes*tick*scale_factor_for_second
+                        spikestart = time_in_sec[plotstart_ind]
+                        spikestop = time_in_sec[plotstop_ind]
+                        
+                        plotting_spikes = [i for i in plotting_spikes if spikestart < i < spikestop]
+                        
+                        
+                        fig3, ax = plt.subplots(1, 1, figsize=(10, 5))
+                        #ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#048ABF", linewidth = 0.1)
+                        #ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [lfp_mean, lfp_mean], c="#297373", lw=1)
+                        #ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
+                        ax = plt.plot(time_in_sec[plotstart_ind:plotstop_ind], bandpassfilteredsignal[plotstart_ind:plotstop_ind], c='#45858C', linewidth=0.5)
+                        ax = plt.plot(time_in_sec[plotstart_ind:plotstop_ind], butter_lowpass_filtered_signal[plotstart_ind:plotstop_ind], c='#F29829', linewidth=0.5)
+                        ax = plt.plot([time_in_sec[plotstart_ind], time_in_sec[plotstop_ind]], [threshold_LFP, threshold_LFP], c="#A6036D", lw=1)
+                        ax = plt.plot([time_in_sec[plotstart_ind], time_in_sec[plotstop_ind]], [-threshold_LFP, -threshold_LFP], c="#A6036D", lw=1)
+                        ax = plt.plot(plotting_spikes, [threshold-1]*np.asarray(plotting_spikes).shape[0], 'ro', ms=2, c="#D9580D")
+                        ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
+                        
+                        
+                        print(time_in_sec[plotstart_ind])
+                        print(time_in_sec[plotstop_ind])
+                        ax = plt.title('Channel %s' %channellabel)
+                        ax = plt.xlabel('Time in Sec')
+                        ax = plt.ylabel('µ volt')
+                        
+                        fig3.savefig(
+                            filebase+'_lfp_Up_'+str(start)+'-'+str(stop)+'_'+channellabel+'_.png')
+                        plt.close(fig3)
+                        plt.clf()
+                        
+                        
+                if len(down_cross)>=1:     
+                    #figure4: zoom in LFPs down
+                    
+                    for i in down_cross:
+                        start = i[0]
+                        stop = i[1]
+                        start_ind = list(time_in_sec).index(int(start))
+                        stop_ind = list(time_in_sec).index(int(np.ceil((stop))))
+                        
+                        
+                        diff = stop_ind - start_ind
+                        plotstart_ind = max(0, start_ind - diff)
+                        plotstop_ind = min(stop_ind + diff, len(time_in_sec)-1)
+                        
+                        plotting_spikes = spikes*tick*scale_factor_for_second
+                        spikestart = time_in_sec[plotstart_ind]
+                        spikestop = time_in_sec[plotstop_ind]
+                        
+                        plotting_spikes = [i for i in plotting_spikes if spikestart < i < spikestop]
+                        
+                        
+                        fig4, ax = plt.subplots(1, 1, figsize=(10, 5))
+                        #ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#048ABF", linewidth = 0.1)
+                        #ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [lfp_mean, lfp_mean], c="#297373", lw=1)
+                        #ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
+                        ax = plt.plot(time_in_sec[plotstart_ind:plotstop_ind], bandpassfilteredsignal[plotstart_ind:plotstop_ind], c='#45858C', linewidth=0.5)
+                        ax = plt.plot(time_in_sec[plotstart_ind:plotstop_ind], butter_lowpass_filtered_signal[plotstart_ind:plotstop_ind], c='#F29829', linewidth=0.5)
+                        ax = plt.plot([time_in_sec[plotstart_ind], time_in_sec[plotstop_ind]], [threshold_LFP, threshold_LFP], c="#A6036D", lw=1)
+                        ax = plt.plot([time_in_sec[plotstart_ind], time_in_sec[plotstop_ind]], [-threshold_LFP, -threshold_LFP], c="#A6036D", lw=1)
+                        ax = plt.plot(plotting_spikes, [threshold-1]*np.asarray(plotting_spikes).shape[0], 'ro', ms=2, c="#D9580D")
+                       
+                        ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
+                        
+                    
+                        ax = plt.title('Channel %s' %channellabel)
+                        ax = plt.xlabel('Time in Sec')
+                        ax = plt.ylabel('µ volt')
+                        
+                         
+                        fig4.savefig(
+                            filebase+'_lfp_Down_'+str(start)+'-'+str(stop)+'_'+channellabel+'_.png')
+                        plt.close(fig3)
+                        plt.clf()
+                
+            except FileNotFoundError:
+                
+                print('A file directory for plotting was not found. We continue.')
+                pass
+                    
                 
         # end of the channel for-loop, from here on
         # plot of rasterplot for channels with > 0.5 htz 
@@ -1128,7 +1108,7 @@ for file in filelist:
         np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amplitudes_DOWNS.npy', lfp_amplitueds_down)
 
         
-        
+        os.chdir(inputdirectory)
         
         #outpath = r'D:\MEA_DATA_Aachen\ANALYZED\2021-05-10_cortex_div4_hCSF_ID039_nodrug_spont_1_analyzed_on_23072021'
         #os.chdir(outpath)
