@@ -50,7 +50,7 @@ DIRECTORIES
 scriptdirectory = r"C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
 inputdirectory = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_h5"
 
-outputdirectory = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_paper\spike_extraction"
+outputdirectory = r"D:/Files_Reutlingen_Jenny/19-04-16/190416_paper/spike_extraction"
 #filename = "01_HCx_GFP_B_aCSF_base"
 """
 IMPORTS
@@ -746,11 +746,11 @@ for file in filelist:
             
             lfp_std = np.std(butter_lowpass_filtered_signal)
             lfp_mean = np.mean(butter_lowpass_filtered_signal)
-            threshold_LFP = lfp_std*3
+            threshold_LFP = 3*lfp_std
             
             
             down_cross, up_cross, amp_down, amp_up = lfp_crossing_detection(
-                butter_lowpass_filtered_signal, threshold_LFP)
+                butter_lowpass_filtered_signal, threshold_LFP, minimal_length=0.05)
             
             lfp_ups[channellabel] = up_cross
             lfp_downs[channellabel] = down_cross
