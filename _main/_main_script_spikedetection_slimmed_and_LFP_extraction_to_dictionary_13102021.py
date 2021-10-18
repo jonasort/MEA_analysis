@@ -1122,8 +1122,15 @@ for file in filelist:
         info_dic = {}
         info_dic['tick']=tick
         info_dic['timelengthrecording_s']=timelengthrecording_s
+        info_dic['timelengthrecording_ms']=timelengthrecording_ms
         info_dic['first_recording_timepoint']=first_recording_timepoint
         info_dic['scale_factor_for_second']=scale_factor_for_second
+        info_dic['time_in_sec']=time_in_sec
+        info_dic['sampling_frequency']=fs
+        
+        
+        
+        
         
         if file == filelist[0]:
             info_dic['network_burst_threshold_basline']=network_burst_threshold
