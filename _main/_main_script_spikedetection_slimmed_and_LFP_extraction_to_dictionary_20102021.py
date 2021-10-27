@@ -655,559 +655,563 @@ for file in filelist:
     # unfortunately another for loop to get through the subrecordings
     
     for i in signal_cuts:
+        
+        
+        
         starting_point = i[0]
         stopping_point = i[1]
     
-    
-        #timestr = time.strftime("%d%m%Y")
-        outpath = os.path.join(
-            outputdirectory, filebase + '_from_'+str(starting_point) + 
-            '_to_' +str(stopping_point) + '_analyzed_on_'+timestr).replace("\\","/")
-        try:
-            os.mkdir(outpath)
-        except OSError:
-            print ("Creation of the directory %s failed" % outpath)
-        else:
-            print ("Successfully created the directory %s " % outpath)
-            
-        os.chdir(outpath)
+        if stopping_point - starting_point > 10:    
         
-        
-        
-        # second for loop for every channel:
-        for i in range (0, len(np_analog_for_filter)):
-        # for every channel we get the signal, filter it, define a threshold
-        # see the crossings, align them to the next minimum (=spikes)
-        # fill the dictionary with the tickpoints
-        # and finally plot everything
-            
-            # for long file the cutout dics should not be saved to spare memory
-            # for short files it is possible to keep the cutouts and save them
+            #timestr = time.strftime("%d%m%Y")
+            outpath = os.path.join(
+                outputdirectory, filebase + '_from_'+str(starting_point) + 
+                '_to_' +str(stopping_point) + '_analyzed_on_'+timestr).replace("\\","/")
+            try:
+                os.mkdir(outpath)
+            except OSError:
+                print ("Creation of the directory %s failed" % outpath)
+            else:
+                print ("Successfully created the directory %s " % outpath)
+                
+            os.chdir(outpath)
             
             
-            '''
-            SPIKE DETECTION
-            '''
-            cutouts_dic ={}
-        
-            channel_idx = i
-            labellist = get_MEA_Channel_labels(np_analog_for_filter)
-            signal_in_uV, time_in_sec, sampling_frequency, scale_factor_for_second = get_MEA_Signal(
-                analog_stream_0, channel_idx, from_in_s=starting_point,
-                to_in_s=stopping_point
-                )
-            bandpassfilteredsignal = butter_bandpass_filter(
-                signal_in_uV, lowcut, highcut, sampling_frequency
-                )
-        
-            # This Part is for finding MAD spikes + plotting
-            noise_mad = np.median(np.absolute(bandpassfilteredsignal)) / 0.6745
-            threshold = -5* noise_mad
-            artefact_threshold = -8* noise_mad
-            crossings = detect_threshold_crossings(
-                bandpassfilteredsignal, sampling_frequency, 
-                threshold, dead_time=0.001
-                )
-            spikes=align_to_minimum(
-                bandpassfilteredsignal, fs, crossings, search_range=0.003, 
-                first_time_stamp=first_recording_timepoint
-                )
             
-            if len(spikes) < 10:
-                artefact_crossings = detect_threshold_crossings(
-                    bandpassfilteredsignal, sampling_frequency, 
-                    artefact_threshold, dead_time=0.001
+            # second for loop for every channel:
+            for i in range (0, len(np_analog_for_filter)):
+            # for every channel we get the signal, filter it, define a threshold
+            # see the crossings, align them to the next minimum (=spikes)
+            # fill the dictionary with the tickpoints
+            # and finally plot everything
+                
+                # for long file the cutout dics should not be saved to spare memory
+                # for short files it is possible to keep the cutouts and save them
+                
+                
+                '''
+                SPIKE DETECTION
+                '''
+                cutouts_dic ={}
+            
+                channel_idx = i
+                labellist = get_MEA_Channel_labels(np_analog_for_filter)
+                signal_in_uV, time_in_sec, sampling_frequency, scale_factor_for_second = get_MEA_Signal(
+                    analog_stream_0, channel_idx, from_in_s=starting_point,
+                    to_in_s=stopping_point
                     )
-                artefacts = align_to_minimum(
-                    bandpassfilteredsignal, fs, artefact_crossings, search_range=0.003, 
+                bandpassfilteredsignal = butter_bandpass_filter(
+                    signal_in_uV, lowcut, highcut, sampling_frequency
+                    )
+            
+                # This Part is for finding MAD spikes + plotting
+                noise_mad = np.median(np.absolute(bandpassfilteredsignal)) / 0.6745
+                threshold = -5* noise_mad
+                artefact_threshold = -8* noise_mad
+                crossings = detect_threshold_crossings(
+                    bandpassfilteredsignal, sampling_frequency, 
+                    threshold, dead_time=0.001
+                    )
+                spikes=align_to_minimum(
+                    bandpassfilteredsignal, fs, crossings, search_range=0.003, 
                     first_time_stamp=first_recording_timepoint
                     )
-            
-            
-            # this line accoutns for a starting point of the recording that is != 0
-            spikes = spikes + int(time_in_sec[0]/(scale_factor_for_second*tick)) 
-            channellabel = labellist[i]
-            spikedic_MAD[channellabel] = spikes
-            bandpass_signal_dic[channellabel] = bandpassfilteredsignal
-            #artefactsdic_MAD[channellabel] = artefacts
-            print('iteration ' + str(i) + 'channel: ' +str(channellabel))
-            
-          
+                
+                if len(spikes) < 10:
+                    artefact_crossings = detect_threshold_crossings(
+                        bandpassfilteredsignal, sampling_frequency, 
+                        artefact_threshold, dead_time=0.001
+                        )
+                    artefacts = align_to_minimum(
+                        bandpassfilteredsignal, fs, artefact_crossings, search_range=0.003, 
+                        first_time_stamp=first_recording_timepoint
+                        )
+                
+                
+                # this line accoutns for a starting point of the recording that is != 0
+                spikes = spikes + int(time_in_sec[0]/(scale_factor_for_second*tick)) 
+                channellabel = labellist[i]
+                spikedic_MAD[channellabel] = spikes
+                bandpass_signal_dic[channellabel] = bandpassfilteredsignal
+                #artefactsdic_MAD[channellabel] = artefacts
+                print('iteration ' + str(i) + 'channel: ' +str(channellabel))
                 
               
-            
-            '''
-            
-            LFP_CROSSINGS
-            
-            '''
-            
-            T = timelengthrecording_s         # Sample Period
-            fs = fs      # sample rate, Hz
-            cutoff = 100      # desired cutoff frequency of the filter of lowpass
-            nyq = 0.5 * fs  # Nyquist Frequency
-            order = 2       # sin wave can be approx represented as quadratic
-            n = int(T * fs) # total number of samples
-            
-            butter_lowpass_filtered_signal = butter_lowpass_filter(signal_in_uV, cutoff, fs, order)
-            
-            
-            lfp_std = np.std(butter_lowpass_filtered_signal)
-            lfp_mean = np.mean(butter_lowpass_filtered_signal)
-            threshold_LFP = 3*lfp_std
-            
-            
-            down_cross, up_cross, amp_down, amp_up = lfp_crossing_detection(
-                butter_lowpass_filtered_signal, threshold_LFP, minimal_length=0.03)
-            '''
-            Modulation for the LFP Start
-            '''
-            convolved_signal = np.convolve(butter_lowpass_filtered_signal, np.ones(3000)/3000, mode='full')
-            
-            
-            length_cutter = len(butter_lowpass_filtered_signal)
-            
-            cs = convolved_signal[:length_cutter]
-            
-            cs_threshold = np.std(cs)*2
-            
-            cs_down_cross, cs_up_cross, cs_amp_down, cs_amp_up = lfp_crossing_detection(
-                convolved_signal, cs_threshold, minimal_length=0.01)
-            
-            
-            
-            
-            '''
-            Modulation for the LFP Stop
-            
-            '''
-            
-            
-            
-            
-            lfp_ups[channellabel] = up_cross
-            lfp_downs[channellabel] = down_cross
-            lfp_amplitudes_up[channellabel] = amp_up
-            lfp_amplitueds_down[channellabel] = amp_down
-            
-            cs_lfp_ups[channellabel] = cs_up_cross
-            cs_lfp_downs[channellabel] = cs_down_cross
-            cs_lfp_amplitudes_up[channellabel] = cs_amp_up
-            cs_lfp_amplitudes_down[channellabel] = cs_amp_down
-
-            
-            
-            
-            
-            lowpass_signal_dic[channellabel] = butter_lowpass_filtered_signal
-            convolved_lowpass_signal_dic[channellabel] = convolved_signal
-
-
-            
-            '''
-            PLOTTING OF SPIKES + LFP
-            
-            '''
-            
-            # if there are detected spikes get the waveforms, plot the channel and waveforms and save
-            
-            try:
-            
-            
-            
-                if len(spikes) > 3:
                     
-                    #only extract cutouts when they are relevant
-                    cutouts = extract_waveforms(
-                            bandpassfilteredsignal, sampling_frequency, spikes, 
-                            pre, post
-                            )
-                    cutouts_dic[channellabel] = cutouts
-                    
-                    
-                    plt.style.use("seaborn-white")
-                    
-                    
-                    # figure 1: signal with threshold
-                    fig, ax = plt.subplots(1, 1, figsize=(20, 10))
-                    ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#45858C")
-                    ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
-                    ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
-                    ax = plt.title('Channel %s' %channellabel)
-                    ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
-                    ax = plt.ylabel('µ volt')
-                    ax = plt.plot(time_in_sec, butter_lowpass_filtered_signal, c='#F29829', linewidth=0.5)
-                    for i in down_cross:
-                        ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
-                    for i in up_cross:
-                        ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
-                    fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
-                    plt.close(fig) 
-                    plt.clf()
-                                           
-                    #figure 2: waveforms 
-                    fig2, ax2 = plt.subplots(1, 1, figsize=(12,6))
-                    #ax2 is a plot of the waveform cutouts
-                    n = 100
-                    n = min(n, cutouts.shape[0])
-                    time_in_us = np.arange(-pre*1000, post*1000, 1e3/fs)
-                    cutout_mean = np.mean(cutouts, axis=0)
-                    for i in range(n):
-                        ax2 = plt.plot(time_in_us, cutouts[i,]*1e6, color='black', linewidth=1, alpha=0.3)
-                        ax2 = plt.plot(time_in_us, cutout_mean*1e6, color="red", linewidth=1, alpha=0.3)
-                        ax2 = plt.xlabel('Time (%s)' % ureg.ms)
-                        ax2 = plt.ylabel('Voltage (%s)' % ureg.uV)
-                        ax2 = plt.title('Cutouts of Channel %s' %channellabel)
-            
-                    fig2.savefig(filebase+'_waveforms_'+channellabel+'_.png')
-                    plt.close(fig2)
-                    plt.clf()
+                  
                 
+                '''
+                
+                LFP_CROSSINGS
+                
+                '''
+                
+                T = timelengthrecording_s         # Sample Period
+                fs = fs      # sample rate, Hz
+                cutoff = 100      # desired cutoff frequency of the filter of lowpass
+                nyq = 0.5 * fs  # Nyquist Frequency
+                order = 2       # sin wave can be approx represented as quadratic
+                n = int(T * fs) # total number of samples
+                
+                butter_lowpass_filtered_signal = butter_lowpass_filter(signal_in_uV, cutoff, fs, order)
+                
+                
+                lfp_std = np.std(butter_lowpass_filtered_signal)
+                lfp_mean = np.mean(butter_lowpass_filtered_signal)
+                threshold_LFP = 3*lfp_std
+                
+                
+                down_cross, up_cross, amp_down, amp_up = lfp_crossing_detection(
+                    butter_lowpass_filtered_signal, threshold_LFP, minimal_length=0.03)
+                '''
+                Modulation for the LFP Start
+                '''
+                convolved_signal = np.convolve(butter_lowpass_filtered_signal, np.ones(3000)/3000, mode='full')
+                
+                
+                length_cutter = len(butter_lowpass_filtered_signal)
+                
+                cs = convolved_signal[:length_cutter]
+                
+                cs_threshold = np.std(cs)*2
+                
+                cs_down_cross, cs_up_cross, cs_amp_down, cs_amp_up = lfp_crossing_detection(
+                    convolved_signal, cs_threshold, minimal_length=0.01)
+                
+                
+                
+                
+                '''
+                Modulation for the LFP Stop
+                
+                '''
+                
+                
+                
+                
+                lfp_ups[channellabel] = up_cross
+                lfp_downs[channellabel] = down_cross
+                lfp_amplitudes_up[channellabel] = amp_up
+                lfp_amplitueds_down[channellabel] = amp_down
+                
+                cs_lfp_ups[channellabel] = cs_up_cross
+                cs_lfp_downs[channellabel] = cs_down_cross
+                cs_lfp_amplitudes_up[channellabel] = cs_amp_up
+                cs_lfp_amplitudes_down[channellabel] = cs_amp_down
+    
+                
+                
+                
+                
+                lowpass_signal_dic[channellabel] = butter_lowpass_filtered_signal
+                convolved_lowpass_signal_dic[channellabel] = convolved_signal
+    
+    
+                
+                '''
+                PLOTTING OF SPIKES + LFP
+                
+                '''
+                
+                # if there are detected spikes get the waveforms, plot the channel and waveforms and save
+                
+                try:
+                
+                
+                
+                    if len(spikes) > 3:
+                        
+                        #only extract cutouts when they are relevant
+                        cutouts = extract_waveforms(
+                                bandpassfilteredsignal, sampling_frequency, spikes, 
+                                pre, post
+                                )
+                        cutouts_dic[channellabel] = cutouts
+                        
+                        
+                        plt.style.use("seaborn-white")
+                        
+                        
+                        # figure 1: signal with threshold
+                        fig, ax = plt.subplots(1, 1, figsize=(20, 10))
+                        ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#45858C")
+                        ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
+                        ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
+                        ax = plt.title('Channel %s' %channellabel)
+                        ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
+                        ax = plt.ylabel('µ volt')
+                        ax = plt.plot(time_in_sec, butter_lowpass_filtered_signal, c='#F29829', linewidth=0.5)
+                        for i in down_cross:
+                            ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
+                        for i in up_cross:
+                            ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
+                        fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
+                        plt.close(fig) 
+                        plt.clf()
+                                               
+                        #figure 2: waveforms 
+                        fig2, ax2 = plt.subplots(1, 1, figsize=(12,6))
+                        #ax2 is a plot of the waveform cutouts
+                        n = 100
+                        n = min(n, cutouts.shape[0])
+                        time_in_us = np.arange(-pre*1000, post*1000, 1e3/fs)
+                        cutout_mean = np.mean(cutouts, axis=0)
+                        for i in range(n):
+                            ax2 = plt.plot(time_in_us, cutouts[i,]*1e6, color='black', linewidth=1, alpha=0.3)
+                            ax2 = plt.plot(time_in_us, cutout_mean*1e6, color="red", linewidth=1, alpha=0.3)
+                            ax2 = plt.xlabel('Time (%s)' % ureg.ms)
+                            ax2 = plt.ylabel('Voltage (%s)' % ureg.uV)
+                            ax2 = plt.title('Cutouts of Channel %s' %channellabel)
+                
+                        fig2.savefig(filebase+'_waveforms_'+channellabel+'_.png')
+                        plt.close(fig2)
+                        plt.clf()
+                    
+                    else:
+                        
+                        plt.style.use("seaborn-white")
+                        
+                        # withouth spikes, so we always have an overview file
+                        # figure 1: signal with threshold
+                        fig, ax = plt.subplots(1, 1, figsize=(20, 10))
+                        ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#45858C")
+                        ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
+                        #ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
+                        ax = plt.title('Channel %s' %channellabel)
+                        ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
+                        ax = plt.ylabel('µ volt')
+                        ax = plt.plot(time_in_sec, butter_lowpass_filtered_signal, c='#F29829', linewidth=0.5)
+                        for i in down_cross:
+                            ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
+                        for i in up_cross:
+                            ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
+                        fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
+                        plt.close(fig) 
+                        plt.clf()
+                    
+                    
+                    # cutoutdics are deleted to spare memory
+                    del cutouts_dic
+                    
+                    if len(up_cross)>=1: 
+                        
+                
+                        #figure 3: zoom in on LFPs up
+                        
+                        for i in up_cross:
+                            
+                                
+                            start = i[0]
+                            stop = i[1]
+                            
+                            # frist get the relevant range of time to plot
+                            plotting_time = [tis for tis in time_in_sec if start <= tis <= stop]
+                            
+                            #extract the index from it
+                            start_ind = list(time_in_sec).index(plotting_time[0])
+                            stop_ind = list(time_in_sec).index(plotting_time[-1])
+                            
+                            
+                            diff = stop_ind - start_ind
+                            plotstart_ind = int(max(time_in_sec[0], start_ind - diff))
+                            plotstop_ind = int((min(stop_ind + diff, len(time_in_sec)-1)))
+                            
+                            # the indexes are converted to time in seconds
+                            time_start = time_in_sec[plotstart_ind]
+                            time_stop = time_in_sec[plotstop_ind]
+                            
+                            
+                            plotting_spikes = spikes*tick*scale_factor_for_second
+                            
+                            
+                            plotting_spikes = [spike for spike in plotting_spikes if time_start < spike < time_stop ]
+                            plotting_time = [tis for tis in time_in_sec if time_start <= tis < time_stop ]
+                            #plotting_bandpass =  [j for j in list(bandpassfilteredsignal) if time_start <= j  < time_stop]
+                            #plotting_lowpass = [k for k in list(butter_lowpass_filtered_signal) if time_start <= k  < time_stop]
+                            
+                            
+                            fig3, ax = plt.subplots(1, 1, figsize=(10, 5))
+                            ax = plt.plot(plotting_time, bandpassfilteredsignal[plotstart_ind:plotstop_ind], c='#45858C', linewidth=0.5)
+                            ax = plt.plot(plotting_time, butter_lowpass_filtered_signal[plotstart_ind:plotstop_ind], c='#F29829', linewidth=0.5)
+                            ax = plt.plot([plotting_time[0], plotting_time[-1]], [threshold_LFP, threshold_LFP], c="#A6036D", lw=1)
+                            ax = plt.plot([plotting_time[0], plotting_time[-1]], [-threshold_LFP, -threshold_LFP], c="#A6036D", lw=1)
+                            ax = plt.plot(plotting_spikes, [threshold-1]*np.asarray(plotting_spikes).shape[0], 'ro', ms=2, c="#D9580D")
+                            ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
+                            
+                            
+                            print(time_in_sec[plotstart_ind])
+                            print(time_in_sec[plotstop_ind])
+                            ax = plt.title('Channel %s' %channellabel)
+                            ax = plt.xlabel('Time in Sec')
+                            ax = plt.ylabel('µ volt')
+                            
+                            fig3.savefig(
+                                filebase+'_lfp_Up_'+str(start)+'-'+str(stop)+'_'+channellabel+'_.png')
+                            plt.close(fig3)
+                            plt.clf()
+                                
+                                
+                            
+                    if len(down_cross)>=1:     
+                        #figure4: zoom in LFPs down
+                        
+                        for i in down_cross:
+                            
+                        
+                            start = i[0]
+                            stop = i[1]
+                            
+                            # frist get the relevant range of time to plot
+                            plotting_time = [tis for tis in time_in_sec if start <= tis <= stop]
+                            
+                            #extract the index from it
+                            start_ind = list(time_in_sec).index(plotting_time[0])
+                            stop_ind = list(time_in_sec).index(plotting_time[-1])
+                            
+                            
+                            diff = stop_ind - start_ind
+                            plotstart_ind = int(max(time_in_sec[0], start_ind - diff))
+                            plotstop_ind = int((min(stop_ind + diff, len(time_in_sec)-1)))
+                            
+                            # the indexes are converted to time in seconds
+                            time_start = time_in_sec[plotstart_ind]
+                            time_stop = time_in_sec[plotstop_ind]
+                            
+                            
+                            plotting_spikes = spikes*tick*scale_factor_for_second
+                            
+                            
+                            plotting_spikes = [spike for spike in plotting_spikes if time_start < spike < time_stop ]
+                            plotting_time = [tis for tis in time_in_sec if time_start <= tis < time_stop ]
+                            #plotting_bandpass =  [j for j in list(bandpassfilteredsignal) if time_start <= j  < time_stop]
+                            #plotting_lowpass = [k for k in list(butter_lowpass_filtered_signal) if time_start <= k  < time_stop]
+                            
+                            
+                            fig4, ax = plt.subplots(1, 1, figsize=(10, 5))
+                            ax = plt.plot(plotting_time, bandpassfilteredsignal[plotstart_ind:plotstop_ind], c='#45858C', linewidth=0.5)
+                            ax = plt.plot(plotting_time, butter_lowpass_filtered_signal[plotstart_ind:plotstop_ind], c='#F29829', linewidth=0.5)
+                            ax = plt.plot([plotting_time[0], plotting_time[-1]], [threshold_LFP, threshold_LFP], c="#A6036D", lw=1)
+                            ax = plt.plot([plotting_time[0], plotting_time[-1]], [-threshold_LFP, -threshold_LFP], c="#A6036D", lw=1)
+                            ax = plt.plot(plotting_spikes, [threshold-1]*np.asarray(plotting_spikes).shape[0], 'ro', ms=2, c="#D9580D")
+                           
+                            ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
+                            
+                        
+                            ax = plt.title('Channel %s' %channellabel)
+                            ax = plt.xlabel('Time in Sec')
+                            ax = plt.ylabel('µ volt')
+                            
+                             
+                            fig4.savefig(
+                                filebase+'_lfp_Down_'+str(start)+'-'+str(stop)+'_'+channellabel+'_.png')
+                            plt.close(fig3)
+                            plt.clf()
+                                
+                    
+                except:
+                    
+                    print('Some mistake. We continue.')
+                    pass
+                
+            
+                        
+                    
+            # end of the channel for-loop, from here on
+            # plot of rasterplot for channels with > 0.5 htz 
+            # create an array of the spikes in scale of seconds
+        
+            spikedic_seconds = {}
+            for key in spikedic_MAD:
+                relevant_factor = timelengthrecording_s*0.05
+                if len(spikedic_MAD[key])>relevant_factor:
+                    sec_array = spikedic_MAD[key]*tick*scale_factor_for_second
+                    spikedic_seconds[key]=sec_array
+            spikearray_seconds = np.asarray(list(spikedic_seconds.values()))  
+            
+            '''
+            
+            NETWORK ACTIVITY
+            
+            '''
+        
+            # get a 1-D array with every detected spike
+            scale_factor_for_milisecond = 1e-03
+            full_spike_list = []
+            full_spike_list_seconds = []
+            for key in spikedic_MAD:
+                if len(spikedic_MAD[key])>relevant_factor:
+                    x = list(np.asarray(spikedic_MAD[key])*scale_factor_for_milisecond*tick)
+                    full_spike_list = full_spike_list + x
+            
+                    xs = list(np.asarray(spikedic_MAD[key])*scale_factor_for_second*tick)
+                    full_spike_list_seconds = full_spike_list_seconds + xs
+            full_spikes = sorted(full_spike_list)
+            full_spikes_seconds = sorted(full_spike_list_seconds)
+        
+        
+            #define bins 
+            binsize = 0.005 #seconds
+            bins= np.arange(0, timelengthrecording_s+binsize, binsize)
+            
+            # make a histogram 
+            full_spikes_binned = np.histogram(full_spikes_seconds, bins)[0]
+            
+           
+            #trial of population burst plot as inspired by Andrea Corna
+            bins = int(timelengthrecording_s / binsize)+1
+            
+            firing_rate_histogram = np.histogram(full_spikes_seconds, bins=bins)
+            firing_rate = firing_rate_histogram[0]*200 #conversion to hertz
+            
+            
+            def gaussian_smoothing(y, window_size=10, sigma=2):
+                
+                filt = signal.gaussian(window_size, sigma)
+                
+                return signal.convolve(y, filt, mode='same')
+            
+            N = int(1.5/binsize) # für eine Secunde, das Sliding window, also letztlich number of bins
+            
+            # gaussian smmothing fo the firing rate and moving average
+            fr_gau = gaussian_smoothing(firing_rate)
+            ma_fr_gau = np.convolve(fr_gau, np.ones(N)/N, mode='same')
+            #plt.plot(ma_fr_gau)
+            
+            
+            
+            
+            # we look for the mean of the MA as threshold
+            # we arrange this mean in an array for plotting
+            mean_ma_fr_gau = np.mean(ma_fr_gau)
+            network_burst_threshold = mean_ma_fr_gau
+            
+            
+            # to compare the amount of network bursts over different recordings we want the threshold
+            # to be form the baseline file
+            #baselinefile = filelist[1]
+            
+            #baseline_file_threshold = np.load(baselinefile+'_info_dict.npy',
+             #                                 allow_pickle = True).item()['network_burst_threshold']
+            
+            
+            # Cave: funktioniert so nur, wenn das File Komplett durchläuft
+            #if file == filelist[0]:
+             #   network_burst_threshold = mean_ma_fr_gau
+            #else:
+             #   network_burst_threshold = baseline_file_threshold
+        
+            
+            shape_for_threshold = np.shape(ma_fr_gau)
+            network_burst_threshold_array = np.full(shape_for_threshold, network_burst_threshold)
+            
+        
+            # now we identify the burts from the network and will extract an array with 
+            # tuples containing the burst start and end times
+            bursts= []
+            burst_start = []
+            burst_seconds_start = []
+            burst_end = []
+            burst_seconds_end = []
+            for index in range(0, len(ma_fr_gau[:-N])):
+                if ma_fr_gau[index+N] > network_burst_threshold:
+                    if ma_fr_gau[index+N-1] <= network_burst_threshold:
+                        burst_start.append(index+N)
+                    if index == 0:
+                        burst_start.append(0)
+                        #burst_seconds_start.append((index+N)*0.005)
                 else:
-                    
-                    plt.style.use("seaborn-white")
-                    
-                    # withouth spikes, so we always have an overview file
-                    # figure 1: signal with threshold
-                    fig, ax = plt.subplots(1, 1, figsize=(20, 10))
-                    ax = plt.plot(time_in_sec, bandpassfilteredsignal, c="#45858C")
-                    ax = plt.plot([time_in_sec[0], time_in_sec[-1]], [threshold, threshold], c="#297373")
-                    #ax = plt.plot(spikes*tick*scale_factor_for_second, [threshold-1]*(spikes*tick*scale_factor_for_second).shape[0], 'ro', ms=2, c="#D9580D")
-                    ax = plt.title('Channel %s' %channellabel)
-                    ax = plt.xlabel('Time in Sec, Threshold: %s' %threshold)
-                    ax = plt.ylabel('µ volt')
-                    ax = plt.plot(time_in_sec, butter_lowpass_filtered_signal, c='#F29829', linewidth=0.5)
-                    for i in down_cross:
-                        ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
-                    for i in up_cross:
-                        ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
-                    fig.savefig(filebase+'_signal_'+channellabel+'MAD_THRESHOLD_artefact.png')
-                    plt.close(fig) 
-                    plt.clf()
-                
-                
-                # cutoutdics are deleted to spare memory
-                del cutouts_dic
-                
-                if len(up_cross)>=1: 
-                    
-            
-                    #figure 3: zoom in on LFPs up
-                    
-                    for i in up_cross:
-                        
+                    if (ma_fr_gau[index+N-1] > network_burst_threshold) and (len(burst_start)>0):
+                        if index+N > len(ma_fr_gau):
+                            ending = len(ma_fr_gau)
+                        else: 
+                            ending = index + N
                             
-                        start = i[0]
-                        stop = i[1]
-                        
-                        # frist get the relevant range of time to plot
-                        plotting_time = [tis for tis in time_in_sec if start <= tis <= stop]
-                        
-                        #extract the index from it
-                        start_ind = list(time_in_sec).index(plotting_time[0])
-                        stop_ind = list(time_in_sec).index(plotting_time[-1])
-                        
-                        
-                        diff = stop_ind - start_ind
-                        plotstart_ind = int(max(time_in_sec[0], start_ind - diff))
-                        plotstop_ind = int((min(stop_ind + diff, len(time_in_sec)-1)))
-                        
-                        # the indexes are converted to time in seconds
-                        time_start = time_in_sec[plotstart_ind]
-                        time_stop = time_in_sec[plotstop_ind]
-                        
-                        
-                        plotting_spikes = spikes*tick*scale_factor_for_second
-                        
-                        
-                        plotting_spikes = [spike for spike in plotting_spikes if time_start < spike < time_stop ]
-                        plotting_time = [tis for tis in time_in_sec if time_start <= tis < time_stop ]
-                        #plotting_bandpass =  [j for j in list(bandpassfilteredsignal) if time_start <= j  < time_stop]
-                        #plotting_lowpass = [k for k in list(butter_lowpass_filtered_signal) if time_start <= k  < time_stop]
-                        
-                        
-                        fig3, ax = plt.subplots(1, 1, figsize=(10, 5))
-                        ax = plt.plot(plotting_time, bandpassfilteredsignal[plotstart_ind:plotstop_ind], c='#45858C', linewidth=0.5)
-                        ax = plt.plot(plotting_time, butter_lowpass_filtered_signal[plotstart_ind:plotstop_ind], c='#F29829', linewidth=0.5)
-                        ax = plt.plot([plotting_time[0], plotting_time[-1]], [threshold_LFP, threshold_LFP], c="#A6036D", lw=1)
-                        ax = plt.plot([plotting_time[0], plotting_time[-1]], [-threshold_LFP, -threshold_LFP], c="#A6036D", lw=1)
-                        ax = plt.plot(plotting_spikes, [threshold-1]*np.asarray(plotting_spikes).shape[0], 'ro', ms=2, c="#D9580D")
-                        ax = plt.axvspan(i[0], i[1], color='#BF214B', alpha=0.2)
-                        
-                        
-                        print(time_in_sec[plotstart_ind])
-                        print(time_in_sec[plotstop_ind])
-                        ax = plt.title('Channel %s' %channellabel)
-                        ax = plt.xlabel('Time in Sec')
-                        ax = plt.ylabel('µ volt')
-                        
-                        fig3.savefig(
-                            filebase+'_lfp_Up_'+str(start)+'-'+str(stop)+'_'+channellabel+'_.png')
-                        plt.close(fig3)
-                        plt.clf()
-                            
-                            
-                        
-                if len(down_cross)>=1:     
-                    #figure4: zoom in LFPs down
-                    
-                    for i in down_cross:
-                        
-                    
-                        start = i[0]
-                        stop = i[1]
-                        
-                        # frist get the relevant range of time to plot
-                        plotting_time = [tis for tis in time_in_sec if start <= tis <= stop]
-                        
-                        #extract the index from it
-                        start_ind = list(time_in_sec).index(plotting_time[0])
-                        stop_ind = list(time_in_sec).index(plotting_time[-1])
-                        
-                        
-                        diff = stop_ind - start_ind
-                        plotstart_ind = int(max(time_in_sec[0], start_ind - diff))
-                        plotstop_ind = int((min(stop_ind + diff, len(time_in_sec)-1)))
-                        
-                        # the indexes are converted to time in seconds
-                        time_start = time_in_sec[plotstart_ind]
-                        time_stop = time_in_sec[plotstop_ind]
-                        
-                        
-                        plotting_spikes = spikes*tick*scale_factor_for_second
-                        
-                        
-                        plotting_spikes = [spike for spike in plotting_spikes if time_start < spike < time_stop ]
-                        plotting_time = [tis for tis in time_in_sec if time_start <= tis < time_stop ]
-                        #plotting_bandpass =  [j for j in list(bandpassfilteredsignal) if time_start <= j  < time_stop]
-                        #plotting_lowpass = [k for k in list(butter_lowpass_filtered_signal) if time_start <= k  < time_stop]
-                        
-                        
-                        fig4, ax = plt.subplots(1, 1, figsize=(10, 5))
-                        ax = plt.plot(plotting_time, bandpassfilteredsignal[plotstart_ind:plotstop_ind], c='#45858C', linewidth=0.5)
-                        ax = plt.plot(plotting_time, butter_lowpass_filtered_signal[plotstart_ind:plotstop_ind], c='#F29829', linewidth=0.5)
-                        ax = plt.plot([plotting_time[0], plotting_time[-1]], [threshold_LFP, threshold_LFP], c="#A6036D", lw=1)
-                        ax = plt.plot([plotting_time[0], plotting_time[-1]], [-threshold_LFP, -threshold_LFP], c="#A6036D", lw=1)
-                        ax = plt.plot(plotting_spikes, [threshold-1]*np.asarray(plotting_spikes).shape[0], 'ro', ms=2, c="#D9580D")
-                       
-                        ax = plt.axvspan(i[0], i[1], color='#5D7CA6', alpha=0.2)
-                        
-                    
-                        ax = plt.title('Channel %s' %channellabel)
-                        ax = plt.xlabel('Time in Sec')
-                        ax = plt.ylabel('µ volt')
-                        
-                         
-                        fig4.savefig(
-                            filebase+'_lfp_Down_'+str(start)+'-'+str(stop)+'_'+channellabel+'_.png')
-                        plt.close(fig3)
-                        plt.clf()
-                            
+                        burst_end.append(ending)
+                        #burst_seconds_end.append((ending)*0.005)
+            bursts = list(zip(burst_start, burst_end))
+            
+            
+            
+            # now we need to reconvert the bins towards seconds:
                 
-            except:
+            for i in burst_start:
+                burst_seconds_start.append(firing_rate_histogram[1][i])
+            for i in burst_end:
+                burst_seconds_end.append(firing_rate_histogram[1][i])
+           
+            bursts_seconds = list(zip(burst_seconds_start, burst_seconds_end))
+            # bursts sind jetzt im 5ms bin 
+            
+            
+            
+            # plot for firing rate and identified bursting activity
+            
+            fig = plt.figure(figsize = (20,8))
+            gs = fig.add_gridspec(2, hspace = 0, height_ratios=[1,5])
+            axs = gs.subplots(sharex=False, sharey=False)
+            axs[0].plot(ma_fr_gau, color= 'black')
+            axs[0].set_ylabel('Firing Rate [Hz]')
+            axs[1].eventplot(spikearray_seconds, color = 'black', linewidths = 0.2,
+                             linelengths = 0.5, colors = 'black')
+            axs[1].set_ylabel('Relevant Channels')
+            
+            for ax in axs:
+                for i in bursts_seconds:
+                    axs[1].axvspan(i[0], i[1], facecolor = '#5B89A6', alpha = 0.3)
+            fig.savefig('raster_firingrate_plot.png', dpi=300)
+            plt.close(fig)
+            
+            
+            
+            
+            # lastly we save important information of the recording into a dictionary
+            # this way, we can easily access them for further analysis
+            
+            info_dic = {}
+            info_dic['tick']=tick
+            info_dic['timelengthrecording_s']=timelengthrecording_s
+            info_dic['timelengthrecording_ms']=timelengthrecording_ms
+            info_dic['first_recording_timepoint']=first_recording_timepoint
+            info_dic['scale_factor_for_second']=scale_factor_for_second
+            info_dic['time_in_sec']=time_in_sec
+            info_dic['sampling_frequency']=fs
+            
+            
+            if file == filelist[0]:
+                info_dic['network_burst_threshold_basline']=network_burst_threshold
+            
+            
+            # remove for reutlingen data
+            filename = filebase
                 
-                print('Some mistake. We continue.')
-                pass
+            #np.save(filename+'_spikes_STD_dict.npy', spikedic)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_spikes_MAD_dict.npy', spikedic_MAD) 
+            #np.save(filename+'_wavecutouts_dict.npy', cutouts_dic)
+            #np.save(filename+'_firingrate_dict.npy', frdic)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_info_dict.npy', info_dic)
             
-        
-                    
-                
-        # end of the channel for-loop, from here on
-        # plot of rasterplot for channels with > 0.5 htz 
-        # create an array of the spikes in scale of seconds
-    
-        spikedic_seconds = {}
-        for key in spikedic_MAD:
-            relevant_factor = timelengthrecording_s*0.05
-            if len(spikedic_MAD[key])>relevant_factor:
-                sec_array = spikedic_MAD[key]*tick*scale_factor_for_second
-                spikedic_seconds[key]=sec_array
-        spikearray_seconds = np.asarray(list(spikedic_seconds.values()))  
-        
-        '''
-        
-        NETWORK ACTIVITY
-        
-        '''
-    
-        # get a 1-D array with every detected spike
-        scale_factor_for_milisecond = 1e-03
-        full_spike_list = []
-        full_spike_list_seconds = []
-        for key in spikedic_MAD:
-            if len(spikedic_MAD[key])>relevant_factor:
-                x = list(np.asarray(spikedic_MAD[key])*scale_factor_for_milisecond*tick)
-                full_spike_list = full_spike_list + x
-        
-                xs = list(np.asarray(spikedic_MAD[key])*scale_factor_for_second*tick)
-                full_spike_list_seconds = full_spike_list_seconds + xs
-        full_spikes = sorted(full_spike_list)
-        full_spikes_seconds = sorted(full_spike_list_seconds)
-    
-    
-        #define bins 
-        binsize = 0.005 #seconds
-        bins= np.arange(0, timelengthrecording_s+binsize, binsize)
-        
-        # make a histogram 
-        full_spikes_binned = np.histogram(full_spikes_seconds, bins)[0]
-        
-       
-        #trial of population burst plot as inspired by Andrea Corna
-        bins = int(timelengthrecording_s / binsize)+1
-        
-        firing_rate_histogram = np.histogram(full_spikes_seconds, bins=bins)
-        firing_rate = firing_rate_histogram[0]*200 #conversion to hertz
-        
-        
-        def gaussian_smoothing(y, window_size=10, sigma=2):
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_UPS.npy', lfp_ups)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_DOWNS.npy', lfp_downs)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amplitudes_UPS.npy', lfp_amplitudes_up)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amplitudes_DOWNS.npy', lfp_amplitueds_down)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_lowpass_signal.npy', lowpass_signal_dic) 
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_bandpass_signal.npy', bandpass_signal_dic) 
             
-            filt = signal.gaussian(window_size, sigma)
             
-            return signal.convolve(y, filt, mode='same')
-        
-        N = int(1.5/binsize) # für eine Secunde, das Sliding window, also letztlich number of bins
-        
-        # gaussian smmothing fo the firing rate and moving average
-        fr_gau = gaussian_smoothing(firing_rate)
-        ma_fr_gau = np.convolve(fr_gau, np.ones(N)/N, mode='same')
-        #plt.plot(ma_fr_gau)
-        
-        
-        
-        
-        # we look for the mean of the MA as threshold
-        # we arrange this mean in an array for plotting
-        mean_ma_fr_gau = np.mean(ma_fr_gau)
-        network_burst_threshold = mean_ma_fr_gau
-        
-        
-        # to compare the amount of network bursts over different recordings we want the threshold
-        # to be form the baseline file
-        #baselinefile = filelist[1]
-        
-        #baseline_file_threshold = np.load(baselinefile+'_info_dict.npy',
-         #                                 allow_pickle = True).item()['network_burst_threshold']
-        
-        
-        # Cave: funktioniert so nur, wenn das File Komplett durchläuft
-        #if file == filelist[0]:
-         #   network_burst_threshold = mean_ma_fr_gau
-        #else:
-         #   network_burst_threshold = baseline_file_threshold
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_ups.npy', cs_lfp_ups) 
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_downs.npy', cs_lfp_downs) 
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_amplitueds_up.npy', cs_lfp_amplitudes_up)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_amplitueds_down.npy', cs_lfp_amplitudes_down)
     
-        
-        shape_for_threshold = np.shape(ma_fr_gau)
-        network_burst_threshold_array = np.full(shape_for_threshold, network_burst_threshold)
-        
-    
-        # now we identify the burts from the network and will extract an array with 
-        # tuples containing the burst start and end times
-        bursts= []
-        burst_start = []
-        burst_seconds_start = []
-        burst_end = []
-        burst_seconds_end = []
-        for index in range(0, len(ma_fr_gau[:-N])):
-            if ma_fr_gau[index+N] > network_burst_threshold:
-                if ma_fr_gau[index+N-1] <= network_burst_threshold:
-                    burst_start.append(index+N)
-                if index == 0:
-                    burst_start.append(0)
-                    #burst_seconds_start.append((index+N)*0.005)
-            else:
-                if (ma_fr_gau[index+N-1] > network_burst_threshold) and (len(burst_start)>0):
-                    if index+N > len(ma_fr_gau):
-                        ending = len(ma_fr_gau)
-                    else: 
-                        ending = index + N
-                        
-                    burst_end.append(ending)
-                    #burst_seconds_end.append((ending)*0.005)
-        bursts = list(zip(burst_start, burst_end))
-        
-        
-        
-        # now we need to reconvert the bins towards seconds:
             
-        for i in burst_start:
-            burst_seconds_start.append(firing_rate_histogram[1][i])
-        for i in burst_end:
-            burst_seconds_end.append(firing_rate_histogram[1][i])
-       
-        bursts_seconds = list(zip(burst_seconds_start, burst_seconds_end))
-        # bursts sind jetzt im 5ms bin 
-        
-        
-        
-        # plot for firing rate and identified bursting activity
-        
-        fig = plt.figure(figsize = (20,8))
-        gs = fig.add_gridspec(2, hspace = 0, height_ratios=[1,5])
-        axs = gs.subplots(sharex=False, sharey=False)
-        axs[0].plot(ma_fr_gau, color= 'black')
-        axs[0].set_ylabel('Firing Rate [Hz]')
-        axs[1].eventplot(spikearray_seconds, color = 'black', linewidths = 0.2,
-                         linelengths = 0.5, colors = 'black')
-        axs[1].set_ylabel('Relevant Channels')
-        
-        for ax in axs:
-            for i in bursts_seconds:
-                axs[1].axvspan(i[0], i[1], facecolor = '#5B89A6', alpha = 0.3)
-        fig.savefig('raster_firingrate_plot.png', dpi=300)
-        plt.close(fig)
-        
-        
-        
-        
-        # lastly we save important information of the recording into a dictionary
-        # this way, we can easily access them for further analysis
-        
-        info_dic = {}
-        info_dic['tick']=tick
-        info_dic['timelengthrecording_s']=timelengthrecording_s
-        info_dic['timelengthrecording_ms']=timelengthrecording_ms
-        info_dic['first_recording_timepoint']=first_recording_timepoint
-        info_dic['scale_factor_for_second']=scale_factor_for_second
-        info_dic['time_in_sec']=time_in_sec
-        info_dic['sampling_frequency']=fs
-        
-        
-        if file == filelist[0]:
-            info_dic['network_burst_threshold_basline']=network_burst_threshold
-        
-        
-        # remove for reutlingen data
-        filename = filebase
             
-        #np.save(filename+'_spikes_STD_dict.npy', spikedic)
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_spikes_MAD_dict.npy', spikedic_MAD) 
-        #np.save(filename+'_wavecutouts_dict.npy', cutouts_dic)
-        #np.save(filename+'_firingrate_dict.npy', frdic)
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_info_dict.npy', info_dic)
-        
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_UPS.npy', lfp_ups)
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_DOWNS.npy', lfp_downs)
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amplitudes_UPS.npy', lfp_amplitudes_up)
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amplitudes_DOWNS.npy', lfp_amplitueds_down)
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_lowpass_signal.npy', lowpass_signal_dic) 
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_bandpass_signal.npy', bandpass_signal_dic) 
-        
-        
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_ups.npy', cs_lfp_ups) 
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_downs.npy', cs_lfp_downs) 
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_amplitueds_up.npy', cs_lfp_amplitudes_up)
-        np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_amplitueds_down.npy', cs_lfp_amplitudes_down)
-
-        
-        
-        
-        
-        
-        
-        
-        os.chdir(inputdirectory)
-        
+            
+            
+            
+            
+            
+            os.chdir(inputdirectory)
+            
         #outpath = r'D:\MEA_DATA_Aachen\ANALYZED\2021-05-10_cortex_div4_hCSF_ID039_nodrug_spont_1_analyzed_on_23072021'
         #os.chdir(outpath)
         #spikedic_MAD = np.load(filename+'_spikes_MAD_dict.npy', allow_pickle=True).item()

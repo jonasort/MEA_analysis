@@ -18,10 +18,10 @@ import pickle
 
 
 # this directory for the extracted spikes and lfp dictionaries
-working_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_lfp_spikes"
+working_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021"
 
 # second directory/recording where the rest of analysis will be stored
-output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_lfp_spikes\analysis_trial"
+output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021\analysis_26102021"
 
 
 

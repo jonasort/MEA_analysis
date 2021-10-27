@@ -29,9 +29,9 @@ Directories
 
 '''
 
-working_directory =r"D:\MEA_DATA_Aachen\ANALYZED\ID046_lfp_spikes\analysis_trial"
+working_directory =r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021\analysis_26102021"
 
-output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_lfp_spikes\analysis_trial"
+output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021\analysis_26102021"
 
 filename = "2021-05-17_cortex_div11_aCSF_ID046_30µMNorepinephrine_spont_1"
 
@@ -581,7 +581,7 @@ SCRIPT
 '''
 
 
-filelist = glob.glob('*filename*.pkl')
+filelist = glob.glob('*'+filename+'*.pkl')
 
 # load in the pickle
 MAIN_RECORDING_DICTIONARY = pickle.load(
@@ -889,8 +889,10 @@ pos = nx.get_node_attributes(G, 'pos')
 layer = nx.get_node_attributes(G, 'layer')
 color = nx.get_node_attributes(G, 'color')
 burst_time = nx.get_node_attributes(G, 'bursting_time_normalized')
-centrality = nx.betweenness_centrality(G, k=10, endpoints = True)
-
+try:
+    centrality = nx.betweenness_centrality(G, k=10, endpoints = True)
+except:
+    print('Degree Centrality Exception encountered')
 '''
 Plot the Graph Result for sanity Check
 
