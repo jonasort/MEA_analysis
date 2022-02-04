@@ -17,7 +17,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
 import seaborn as sns
-
 #networkx
 import plotly.graph_objects as go
 import networkx as nx
@@ -29,11 +28,11 @@ Directories
 
 '''
 
-working_directory =r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021\analysis_26102021"
+working_directory =r"D:/Files_Reutlingen_Jenny/19-04-15/190415_paper"
 
-output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021\analysis_26102021"
+output_directory = r"D:/Files_Reutlingen_Jenny/19-04-15/190415_paper"
 
-filename = "2021-05-17_cortex_div11_aCSF_ID046_30µMNorepinephrine_spont_1"
+filename = "190415_03_Cortex-synChR2-A_aCSF_rewashafterhcsf"
 
 os.chdir(working_directory)
 
@@ -699,7 +698,7 @@ MAIN_RECORDING_DICTIONARY['bursts_per_channel'] = bursts_per_unit_dic
 
 
 '''
-From here Burst Connections
+Burst Connections
 '''
 # this function takes the dictionary with every burst start and stop and returns a dictionary
 # where every unit is a key and the values are tuples consisting of keys of connected units (i.e., bursting together)
@@ -744,7 +743,7 @@ simple_burst_connection = {}
 for key in burst_connections_dic:
     listed_connections = []
     for i in burst_connections_dic[key]:
-        #if i[1] > timelengthrecording_s*0.1: # Länge des Recordings * mindestens 0.1Hz -> alle zehn Sekunden
+        if i[1] > timelengthrecording_s*0.1: # Länge des Recordings * mindestens 0.1Hz -> alle zehn Sekunden
         #if i[1] > int(mean_fr_whole_recording*0.1):
         
        #if i[2] > 3: # Länge der gesharedten bursts in sec
@@ -755,7 +754,7 @@ for key in burst_connections_dic:
 
 MAIN_RECORDING_DICTIONARY['burst_connections'] = simple_burst_connection
 
-
+'''
 # aachen MEA
 all_channels = ['D1', 'E1', 'F1', 'G1', 'H1', 'J1', 'J2', 'K1', 'K2', 'L1', 'L2', 'L3', 'M1', 'M2', 
                         'M3', 'M4', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'O1', 'O2', 'O3', 'O4', 'O5', 'O6', 
@@ -774,36 +773,66 @@ all_channels = ['D1', 'E1', 'F1', 'G1', 'H1', 'J1', 'J2', 'K1', 'K2', 'L1', 'L2'
                          'L10', 'L11', 'L12', 'L13', 'L14', 'L15', 'L16', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 
                          'M14', 'M15', 'M16', 'N9', 'N10', 'N11', 'N12', 'N13', 'N14', 'N15', 'N16', 'O12', 'O13', 
                          'O14', 'O15', 'O16', 'A12', 'A13', 'A14', 'A15', 'B13', 'B14', 'B15', 'B16', 'C14', 'C15', 'C16', 'D15', 'D16', 'E16']
+'''
+
+# Reutlingen MEA
+all_channels = ['D1', 'E1', 'F1', 'G1', 'H1', 'I1', 'I2', 'K1', 'K2', 'L1', 'L2', 'L3', 'M1', 'M2', 
+                        'M3', 'M4', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'O1', 'O2', 'O3', 'O4', 'O5', 'O6', 
+                        'O7', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'R2', 'R3', 'R4', 'R5', 
+                        'R6', 'R7', 'R8', 'R9', 'R10', 'R11', 'R12', 'R13', 'R14', 'R15', 'B1', 'B2', 'C1', 'C2', 'D2', 'E2', 'F2', 'G2', 'G3', 'H2', 'H3', 'I3', 'K3', 'K4', 
+                         'L4', 'L5', 'M5', 'M6', 'M7', 'N7', 'N8', 'O8', 'O9', 'O10', 'O11', 'P10', 'P11', 
+                         'P12', 'P13', 'P14', 'P15', 'P16', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'B3', 'B4', 'B5', 'B6', 
+                         'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 
+                          'C11', 'C12', 'C13', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 
+                         'D13', 'D14', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E12', 'E13', 'E14', 
+                         'E15', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14', 'F15', 
+                         'F16', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12', 'G13', 'G14', 'G15', 'G16', 
+                         'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'H11', 'H12', 'H13', 'H14', 'H15', 'H16', 'I4', 
+                         'I5', 'I6', 'I7', 'I8', 'I9', 'I10', 'I11', 'I12', 'I13', 'I14', 'I15', 'I16', 'K5', 'K6', 
+                         'K7', 'K8', 'K9', 'K10', 'K11', 'K12', 'K13', 'K14', 'K15', 'K16', 'L6', 'L7', 'L8', 'L9', 
+                         'L10', 'L11', 'L12', 'L13', 'L14', 'L15', 'L16', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 
+                         'M14', 'M15', 'M16', 'N9', 'N10', 'N11', 'N12', 'N13', 'N14', 'N15', 'N16', 'O12', 'O13', 
+                         'O14', 'O15', 'O16', 'A12', 'A13', 'A14', 'A15', 'B13', 'B14', 'B15', 'B16', 'C14', 'C15', 'C16', 'D15', 'D16', 'E16']
+
+
+
 
 '''
-TO DO: Insert real layers!
+CAVE: Always make sure to insert the acutal layerdic for the specific recording
 '''
-layerdic = {'layer1':[], 
-            'layer2-3': ['F1', 'G1', 'H1', 'I1', 'K1', 'L1', 'M1', 'N1', 'O1', 'P1', 'H2', 'I2', 'K2', 'L2', 
-                         'M2', 'N2', 'O2', 'P2', 'R2', 'K3', 'L3', 'M3', 'N3', 'O3', 'P3', 'R3', 'L4', 'M4', 
-                         'N4', 'O4', 'P4', 'R4', 'N5', 'O5', 'P5', 'R5', 'P6', 'R6', 'R7'],
-           'layer4':    ['D1', 'E1', 'F2', 'G2', 'G3', 'H3', 'I3', 'I4', 'K4', 'L5', 'M5', 'M6', 'N6', 'O6', 
-                         'O7', 'P7', 'P8', 'R8'],
-                         
-           'layer5-6':  ['B1', 'C1', 'A2', 'B2', 'C2', 'D2', 'E2', 'A3', 'B3', 'C3', 'D3', 'E3', 'F3',
-                         'A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4', 'A5', 'B5', 'C5', 'D5', 'E5', 
-                         'F5', 'G5', 'H5', 'I5', 'K5', 'A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6', 'I6', 
-                         'K6', 'L6', 'A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7', 'I7', 'K7', 'L7', 'M7', 
-                         'N7', 'A8', 'B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8', 'I8', 'K8', 'L8', 'M8', 
-                         'N8', 'O8', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9', 'I9', 'K9', 'L9', 'M9', 
-                         'N9', 'O9', 'P9', 'R9', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10', 'I10', 'K10', 
-                         'L10', 'M10', 'N10', 'O10', 'P10', 'R10', 'D11', 'E11', 'F11', 'G11', 'H11', 
-                         'I11', 'K11', 'L11', 'M11', 'N11', 'O11', 'P11', 'R11', 'E12', 'F12', 'G12', 
-                         'H12', 'I12', 'K12', 'L12', 'M12', 'N12', 'O12', 'P12', 'R12', 'F13', 'G13', 
-                         'H13', 'I13', 'K13', 'L13', 'M13', 'N13', 'O13', 'P13', 'R13', 'G14', 'H14', 
-                         'I14', 'K14', 'L14', 'M14', 'N14', 'O14', 'P14', 'R14', 'H15', 'I15', 'K15', 
-                         'L15', 'M15', 'N15', 'O15', 'P15', 'R15', 'I16', 'K16', 'L16', 'M16', 
-                         'N16', 'O16', 'P16', 'R16'],
-           'whitematter':['A9', 'A10', 'B10', 'A11', 'B11', 'C11', 'A12', 'B12', 'C12', 'D12', 'A13', 
-                          'B13', 'C13', 'D13', 'E13', 'A14', 'B14', 'C14', 'D14', 'E14', 'F14', 'A15', 
-                          'B15', 'C15', 'D15', 'E15', 'F15', 'G15', 'B16', 'C16', 'D16', 'E16', 'F16', 
-                          'G16', 'H16']
-                         }
+#  layerdic 15.04.2019 Slice A
+layerdic = {'layer1':["O1", "P1","P2", "R2", "R3"], 
+            'layer2-3': [ "F1", "G1", "H1", "I1", "K1", "L1", "M1", "N1",  
+                "G2", "H2", "I2", "K2", "L2", "M2", "N2", "O2", "P2", "R2", 
+                "H3", "I3", "K3", "L3", "M3", "N3", "O3", "P3", "R3", "I4", 
+                "K4", "L4", "M4", "N4", "O4", "P4", "R4", "K5", "L5", "M5", 
+                "N5", "O5", "P5", "R5", "L6", "M6", "N6", "O6", "P6", "R6", 
+                "M7", "N7", "O7", "P7", "R7", "M8", "N8", "O8", "P8", "R8", 
+                "N9", "O9", "P9", "R9", "O10", "P10", "R10", "O11", "P11", 
+                "R11", "P12", "R12", "R13"],
+
+           'layer4':    ["D1", "E1", "E2", "F2",  "F3", "G3", "G4", "H4", "H5", 
+                         "I5", "I6", "K6", "K7", "L7", "K8", "L8", "L9", "M9", 
+                         "M10", "N10", "N11", "N12", "O12", "O13", "P13",  "P14", 
+                         "R14", "R15"],
+
+           'layer5-6':  ["B1", "C1","A2", "B2", "C2", "D2", "A3", "B3", "C3",
+                         "D3", "E3", "A4", "B4", "C4", "D4", "E4", "F4",
+           "A5", "B5", "C5", "D5", "E5", "F5", "G5", "A6", "B6", "C6", "D6", 
+           "E6", "F6", "G6", "H6", "A7", "B7", "C7", "D7", "E7", "F7", "G7", "H7", 
+           "I7", "A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8", "I8", "A9", "B9", 
+           "C9", "D9", "E9", "F9", "G9", "H9", "I9", "K9", "C10", "D10", "E10", 
+           "F10", "G10", "H10", "I10", "K10", "L10", "C11", "D11", "E11", "F11", 
+           "G11", "H11", "I11", "K11", "L11", "M11", "D12", "E12", "F12", "G12", 
+           "H12", "I12", "K12", "L12", "M12", "E13", "F13", "G13", "H13", "I13", 
+           "K13", "L13", "M13", "N13", "F14", "G14", "H14", "I14", "K14", "L14", 
+           "M14", "N14", "O14", "F15", "G15", "H15", "I15", "K15", "L15", "M15", 
+           "N15", "O15", "P15", "G16", "H16", "I16", "K16", "L16", "M16", "N16", 
+           "O16", "P16"],
+           'whitematter':["A10", "B10","A11", "B11", "A12", "B12", "C12", "A13", 
+                          "B13", "C13", "D13", "A14", "B14", "C14", "D14", "E14", 
+                          "A15", "B15", "C15", "D15", "E15", "B16", "C16", 
+                          "D16", "E16", "F16"]}
 
 
 layer_colors={'layer1':'#F28749', 'layer2-3':'#B5D932', 'layer4':'#8C3A67', 'layer5-6':'#3F93A6', 'whitematter':'#C9F2EE'}
@@ -820,7 +849,7 @@ MAIN_RECORDING_DICTIONARY['Infos_Anatomy'] = Infos_Anatomy
 # coordinates are between 0 and 1 via np.linspace
 
 # CAVE: I needs to be exchanged for J for Aachen Data, or i.e. the not MC Rack obtained data
-columnlist =['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','R']
+columnlist =['A','B','C','D','E','F','G','H','I','K','L','M','N','O','P','R']
 mea_coordinates = np.linspace(0,1,16)
 mea_positional_coordinates_dic = {}
 
@@ -838,11 +867,16 @@ time_list = list(bursting_time_per_unit_dic.values())
 maximum = max(time_list)
 minimum = min(time_list)
 
-for key in bursting_time_per_unit_dic:
-    value = bursting_time_per_unit_dic[key]
-    normalized = (value - minimum)/(maximum-minimum)
-    normalized_bursting_time_per_unit_dic[key] = normalized
-
+#### Redo For Loop muss nach außen
+try:
+    
+    for key in bursting_time_per_unit_dic:
+        value = bursting_time_per_unit_dic[key]
+        normalized = (value - minimum)/(maximum-minimum)
+        normalized_bursting_time_per_unit_dic[key] = normalized
+except ZeroDivisionError:
+    print('ZeroDivisionError - ')
+    
 
 '''
 The Burst Graph is produced
@@ -966,8 +1000,8 @@ plt.show()
 
 fig.savefig(filename+'_betweenness_centrality_0p1Gz_04102021.png', dpi = 300, bbox_inches='tight', transparent=True)
 
-'''
 
+'''
 
 
 MAIN_RECORDING_DICTIONARY['GRAPH_shared_bursts'] = G

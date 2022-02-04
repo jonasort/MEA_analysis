@@ -48,9 +48,9 @@ DIRECTORIES
 
 # adjust the directories first!
 scriptdirectory = r"C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
-inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210517_cortex_div11"
+inputdirectory = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_h5"
 
-outputdirectory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021"
+outputdirectory = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_paper\spike_extraction"
 #filename = "01_HCx_GFP_B_aCSF_base"
 """
 IMPORTS
@@ -588,6 +588,10 @@ convolved_lowpass_signal_dic = {}
 
 
 
+
+
+
+
 # for-loop files
 for file in filelist:
     resting_spikedic={}
@@ -595,10 +599,10 @@ for file in filelist:
     cutouts_dic ={} 
     keylist = []
     filename = file
-    filedatebase = filename.split('T')[0]
-    filenamebase = filename.split('__')[1]
-    #filebase = filename.split('.')[0]
-    filebase = filedatebase + '_' + filenamebase
+    #filedatebase = filename.split('T')[0]
+    #filenamebase = filename.split('__')[1]
+    filebase = filename.split('.')[0]
+    #filebase = filedatebase + '_' + filenamebase
     print('Working on file: ' +filename)
     channel_raw_data = McsPy.McsData.RawData(filename)
     get_channel_infos(inputdirectory, filename)
@@ -1219,10 +1223,6 @@ for file in filelist:
         
 
 print('Finished. You can close me, Henner.')
-
-
-
-
 
 
 

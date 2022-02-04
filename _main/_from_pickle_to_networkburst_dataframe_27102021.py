@@ -13,13 +13,13 @@ DIRECTORIES
 scriptdirectory = r"C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
 
 # outputdirectory must already contain the .pkl file
-output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021\analysis_26102021"
+output_directory = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_paper"
 
 # filenam
-filename = "2021-05-17_cortex_div11_aCSF_ID046_30µMNorepinephrine_spont_1"
+filename = "190416_01_cortex-GFP-B_aCSF_nodrug"
 
 # directory where the .npy dictionaries of lfp_signal are stored
-temp_dir = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021\2021-05-17_cortex_div11_aCSF_ID046_30µMNorepinephrine_spont_1_from_0_to_120_analyzed_on_26102021"
+temp_dir = r"D:\Files_Reutlingen_Jenny\19-04-16\190416_paper\spike_extraction"
 
 
 
@@ -416,6 +416,204 @@ def subdivide_spiketrain(spiketrain, sub_start = 0, sub_stop = 10, tick=40, scal
 
 
 
+def find_network_burst_components(network_bursts_seconds, 
+                                  Bursts, spikedic_MAD, ups, 
+                                  up_amplitudes, downs, 
+                                  down_amplitudes, inverted_layerdic):
+    
+    '''
+    ______________________
+    parameters
+    
+    network_bursts_seconds : list of tuples
+        tuples are all filtered network bursts (i.e., the gaussian smoothed firing rate that
+        crosses the mean of the smoothed firing rate)
+        
+        tuple(a, b) with a = burststart, b = burststop in seconds
+        
+    
+    Bursts : dict
+        key = channellabel
+        value = list of tuples (a, b) with a = burststart, b = burststop in µseconds
+        
+    spikedic_MAD : dict
+    
+        key = channellabel
+        value = list of spikes in ticks --> times tick and scale_factor_second_to_receive
+            the spikes in seconds
+            
+    _______________________
+    returns
+        
+    network_bursts_dictionary : dict
+        key = tuple (a, b) with a = networkburststart, b = networkburststop in seconds
+        
+        value = tuple (a,b,c) with a=the number of single channel bursting channels,
+                b = the number of active (i.e., spiking) channels, and c = array of all 
+                single channel bursting channels
+                
+    relevant_relevant_channels : list
+    
+        list with all channels that are active at any network burst
+        can be used to filter the original signal when extracting the LFP
+    
+    
+    '''
+
+
+
+
+
+    
+    network_bursts_dictionary = {}
+    # relevant channels is basically all channels that burst at any time in one list
+    relevant_channels = []
+
+    for i in network_bursts_seconds:
+        
+        network_features_dic = {}
+        
+        network_key = str(i)
+        burst_list = []
+        bursting_channels = []
+        active_channels = []
+        
+        # get all channels that burst while the network burst is going on
+        total_number_burst_starts = 0
+        total_number_burst_ends = 0
+        for key in Bursts:   
+            for b in Bursts[key]:
+                # if either start or end of single channel burst is within the network burst
+                burst_start = b[0]*1e-06
+                burst_stop = b[1]*1e-06
+                   
+                    
+                # every burst that starts and every burst that stops
+                # is counted into the bursting channels and for the
+                # total number of bursts
+               
+                if i[0] <= burst_start <= i[1]:
+                    bursting_channels.append(key)
+                    relevant_channels.append(key)
+                    total_number_burst_starts +=1
+                    
+                    
+                if i[0] <= burst_stop <= i[1]:
+                    bursting_channels.append(key)
+                    relevant_channels.append(key)
+                    total_number_burst_ends +=1
+        
+        # all channels that have a spike
+        spikecount = 0
+        for key in spikedic_MAD:
+            for s in spikedic_MAD[key]:
+                s = s*tick*1e-06
+                if i[0] <= s <= i[1]:
+                    spikecount += 1
+                    active_channels.append(key)
+                    
+        
+        # extract all channels that show a lfp up deviation here
+        # with the index the amplitudes are retrieved
+        # and added to the list to calculate the mean amplitude 
+        lfp_up_list = []
+        lfp_up_amplitudes = []
+        for key in ups:
+            for up in ups[key]:
+                up_start = up[0]
+                up_stop = up[1]
+                up_index = ups[key].index(up)
+                if (i[0] <= up_start <= i[1]) or (i[0] <= up_stop <= i[1]):
+                    lfp_up_list.append(key)
+                    amplitude = lfp_amplit_ups[key][up_index]
+                    lfp_up_amplitudes.append(amplitude)
+        average_up = np.mean(lfp_up_amplitudes)            
+        
+        # extract all channels that show a lfp down deviation here
+        # with the index the amplitudes are retrieved
+        # and added to the list to calculate the mean amplitude 
+        lfp_down_list = []                          
+        lfp_down_amplitudes = []
+        for key in downs:
+            for down in downs[key]:
+                down_start = down[0]
+                down_stop = down[1]
+                down_index = downs[key].index(down)
+                if (i[0] <= down_start <= i[1]) or (i[0] <=down_stop <= i[1]):
+                    lfp_down_list.append(key)
+                    amplitude = lfp_amplit_downs[key][down_index]
+                    lfp_down_amplitudes.append(amplitude)
+        average_down = np.mean(lfp_down_amplitudes)
+        
+        
+        networkburst_layerlist = []
+        for c in active_channels:
+            try:
+                layer = inverted_layerdic[c]
+                networkburst_layerlist.append(layer)
+            except:
+                print('Layer for channel {} missing.'.format(c))
+        
+        
+        # time_length networkburst
+        nb_start = i[0]
+        nb_stop = i[1]
+        timelength_networkburst = nb_stop - nb_start
+        network_features_dic['timelength_network_burst_s'] = timelength_networkburst
+        
+        
+        # add features to the dictionary
+        # bursting channels
+        bursting_channels = np.unique(bursting_channels)
+        network_features_dic['bursting_channels'] = bursting_channels
+        
+        # number of bursting channels
+        n_bursting_channels = len(bursting_channels)
+        network_features_dic['number_of_bursting_channels'] = n_bursting_channels
+        
+        # number of bursting channels
+        network_features_dic['number_burst_starts'] = total_number_burst_starts
+        network_features_dic['number_burst_ends'] = total_number_burst_starts
+        
+        #active channels
+        active_channels = np.unique(active_channels)
+        network_features_dic['active_channels'] = active_channels
+        
+        #number of active channels
+        n_active_channels = len(active_channels)
+        network_features_dic['number_of_active_channels'] = n_active_channels
+        
+        #total number of spikes 
+        network_features_dic['number_of_spikes'] = spikecount
+        
+        # firing rate networkburst
+        firing_rate_networkburst = spikecount/timelength_networkburst
+        network_features_dic['firing_rate_Hz'] = firing_rate_networkburst
+        
+        #up lfps:
+        network_features_dic['channels_lfp_up'] = np.unique(lfp_up_list)
+        network_features_dic['number_channels_with_lfp_up'] = len(np.unique(lfp_up_list))
+        network_features_dic['mean_up_lfp_amplitude'] = average_up
+        
+        #down lfps:
+        network_features_dic['channels_lfp_down'] = np.unique(lfp_down_list)
+        network_features_dic['number_channels_with_lfp_down'] = len(np.unique(lfp_down_list))
+        network_features_dic['mean_down_lfp_amplitude'] = average_down
+        
+        #anatomy_registration
+        network_features_dic['n_layer1_channels'] = networkburst_layerlist.count("layer1")
+        network_features_dic['n_layer2-3_channels'] = networkburst_layerlist.count("layer2-3")
+        network_features_dic['n_layer4_channels'] = networkburst_layerlist.count("layer4")
+        network_features_dic['n_layer5-6_channels'] = networkburst_layerlist.count("layer5-6")
+        network_features_dic['n_whitematter_channels'] = networkburst_layerlist.count("whitematter")
+        
+        
+        
+        network_bursts_dictionary[network_key] = (network_features_dic)
+    
+    return network_bursts_dictionary, relevant_channels
+
+
 
 
 
@@ -461,53 +659,109 @@ scale_factor_for_second = 1e-06
 # import all the extra files with the lfp amplitude deviations
 os.chdir(temp_dir)
 
-# get the respective filenames
-lowpassfile = glob.glob('*lowpass*.npy')[0]
-bandpassfile = glob.glob('*bandpass*.npy')[0]
 
-lfp_down_file = glob.glob('*LFP_DOWNS*.npy')[1]
-lfp_up_file = glob.glob('*LFP_UPS*.npy')[1]
+# create folderlist of the temp directory
+folderlist = glob.glob('*'+filename+'*')
 
-lfp_amp_down_file = glob.glob('*LFP_Amplitudes_DOWNS*.npy')[0]
-lfp_amp_up_file = glob.glob('*LFP_Amplitudes_UPS*.npy')[0]
+for i in folderlist:
+    os.chdir(os.path.join(temp_dir, i))
+    
+    # join the timekey (we need a dictionary structure to join all the subparts)
+    timekey = '_'.join(i.split('_')[-6:-3])
 
-cs_lfp_down_file = glob.glob('*cs_lfp_down*.npy')[0]
-cs_lfp_up_file = glob.glob('*cs_lfp_up*.npy')[0]
-
-cs_lfp_amp_down_file = glob.glob('*cs_lfp_amp*down*.npy')[0]
-cs_lfp_amp_up_file = glob.glob('*cs_lfp_amp*up*.npy')[0]
-
-
-
-# bandpass and lowpass signal
-lowpass_dic = np.load(lowpassfile, allow_pickle=True).item()
-bandpass_dic = np.load(bandpassfile, allow_pickle=True).item()
-
-# lfp deviations
-lfp_downs = np.load(lfp_down_file, allow_pickle=True).item()
-lfp_ups = np.load(lfp_up_file, allow_pickle=True).item()
-
-# lfp amplitudes
-lfp_amplit_downs = np.load(lfp_amp_down_file, allow_pickle=True).item()
-lfp_amplit_ups = np.load(lfp_amp_up_file, allow_pickle=True).item()
-
-# cs lfp deviations
-cs_lfp_downs = np.load(cs_lfp_down_file, allow_pickle=True).item()
-cs_lfp_ups = np.load(cs_lfp_up_file, allow_pickle=True).item()
-
-# cs lfp amplitudes
-cs_lfp_amplit_downs = np.load(cs_lfp_amp_down_file, allow_pickle=True).item()
-cs_lfp_amplit_ups = np.load(cs_lfp_amp_up_file, allow_pickle=True).item()
+    # get the respective filenames
+    lowpassfile = glob.glob('*lowpass*.npy')[0]
+    bandpassfile = glob.glob('*bandpass*.npy')[0]
+    
+    lfp_down_file = glob.glob('*LFP_DOWNS*.npy')[1]
+    lfp_up_file = glob.glob('*LFP_UPS*.npy')[1]
+    
+    lfp_amp_down_file = glob.glob('*LFP_Amplitudes_DOWNS*.npy')[0]
+    lfp_amp_up_file = glob.glob('*LFP_Amplitudes_UPS*.npy')[0]
+    
+    cs_lfp_down_file = glob.glob('*cs_lfp_down*.npy')[0]
+    cs_lfp_up_file = glob.glob('*cs_lfp_up*.npy')[0]
+    
+    cs_lfp_amp_down_file = glob.glob('*cs_lfp_amp*down*.npy')[0]
+    cs_lfp_amp_up_file = glob.glob('*cs_lfp_amp*up*.npy')[0]
 
 
 
+    # bandpass and lowpass signal
+    lowpass_dic = np.load(lowpassfile, allow_pickle=True).item()
+    bandpass_dic = np.load(bandpassfile, allow_pickle=True).item()
+    
+    # lfp deviations
+    lfp_downs = np.load(lfp_down_file, allow_pickle=True).item()
+    lfp_ups = np.load(lfp_up_file, allow_pickle=True).item()
+    
+    # lfp amplitudes
+    lfp_amplit_downs = np.load(lfp_amp_down_file, allow_pickle=True).item()
+    lfp_amplit_ups = np.load(lfp_amp_up_file, allow_pickle=True).item()
+    
+    # cs lfp deviations
+    cs_lfp_downs = np.load(cs_lfp_down_file, allow_pickle=True).item()
+    cs_lfp_ups = np.load(cs_lfp_up_file, allow_pickle=True).item()
+    
+    # cs lfp amplitudes
+    cs_lfp_amplit_downs = np.load(cs_lfp_amp_down_file, allow_pickle=True).item()
+    cs_lfp_amplit_ups = np.load(cs_lfp_amp_up_file, allow_pickle=True).item()
+
+    
 
 
 
+#we create the network_burst_dictionary that will be used to get our data into
+#a dataframe format
+
+network_bursts_dictionary, network_relevant_channels = find_network_burst_components(
+                                  network_bursts_seconds, 
+                                  Bursts, spikedic_MAD, lfp_ups, 
+                                  lfp_amplit_ups, lfp_downs,
+                                  lfp_amplit_downs, inverted_layerdic)
 
 
 
+# the dictionary for dataframe is now iteratively filled with the information
+# from 
+dictionary_for_dataframe = {}
+df = pd.DataFrame.from_records([dictionary_for_dataframe])
 
+for key in network_bursts_dictionary:
+    dictionary_for_dataframe["network_burst_seconds"] = key
+    dictionary_for_dataframe["timelength_network_burst_s"] = network_bursts_dictionary[key]["timelength_network_burst_s"]
+    dictionary_for_dataframe["bursting_channels"] = network_bursts_dictionary[key]["bursting_channels"]
+    dictionary_for_dataframe["number_of_bursting_channels"] = network_bursts_dictionary[key]["number_of_bursting_channels"]
+    dictionary_for_dataframe["number_burst_starts"] = network_bursts_dictionary[key]["number_burst_starts"]
+    dictionary_for_dataframe["number_burst_ends"] = network_bursts_dictionary[key]["number_burst_ends"]
+    dictionary_for_dataframe["active_channels_total"] = network_bursts_dictionary[key]["active_channels"]
+    dictionary_for_dataframe["number_of_active_channels"] = network_bursts_dictionary[key]["number_of_active_channels"]
+    dictionary_for_dataframe["number_of_spikes"] = network_bursts_dictionary[key]["number_of_spikes"]
+    dictionary_for_dataframe["channels_lfp_up"] = network_bursts_dictionary[key]["channels_lfp_up"]
+    dictionary_for_dataframe["number_channels_with_lfp_up"] = network_bursts_dictionary[key]["number_channels_with_lfp_up"]
+    dictionary_for_dataframe["mean_up_lfp_amplitude"] = network_bursts_dictionary[key]["mean_up_lfp_amplitude"]
+    dictionary_for_dataframe["channels_lfp_down"] = network_bursts_dictionary[key]["channels_lfp_down"]
+    dictionary_for_dataframe["number_channels_with_lfp_down"] = network_bursts_dictionary[key]["number_channels_with_lfp_down"]
+    dictionary_for_dataframe["mean_down_lfp_amplitude"] = network_bursts_dictionary[key]["mean_down_lfp_amplitude"]
+    dictionary_for_dataframe["n_layer1_channels"] = network_bursts_dictionary[key]["n_layer1_channels"]
+    dictionary_for_dataframe["n_layer2-3_channels"] = network_bursts_dictionary[key]["n_layer2-3_channels"]
+    dictionary_for_dataframe["n_layer4_channels"] = network_bursts_dictionary[key]["n_layer4_channels"]
+    dictionary_for_dataframe["n_layer5-6_channels"] = network_bursts_dictionary[key]["n_layer5-6_channels"]
+    dictionary_for_dataframe["n_whitematter_channels"] = network_bursts_dictionary[key]["n_whitematter_channels"]
+    
+
+
+    # fill up all basic recoding infos
+    dictionary_for_dataframe["filename"] = filename
+    dictionary_for_dataframe["recording_date"] = Infos_Recording["recordings_date"]
+    dictionary_for_dataframe["timelength_recording_s"] = Infos_Recording["timelengthrecording_s"]
+    dictionary_for_dataframe["medium"] = 'aCSF_baseline'
+    dictionary_for_dataframe["drug"] = 'norepinephrine'
+    dictionary_for_dataframe["drug_concentration_µM"] = 30
+    dictionary_for_dataframe["firingrate_whole_Hz"] = Basics["mean_fr_whole_recording"]
+    dictionary_for_dataframe["active_channels"] = Basics["active_channels"]
+
+    df = df.append(pd.DataFrame.from_records([dictionary_for_dataframe]))
 
 
 

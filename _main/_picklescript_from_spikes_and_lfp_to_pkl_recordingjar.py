@@ -18,12 +18,17 @@ import pickle
 
 
 # this directory for the extracted spikes and lfp dictionaries
-working_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021"
+working_directory = r"D:/Files_Reutlingen_Jenny/19-04-15/190415_paper/spike_extraction"
 
 # second directory/recording where the rest of analysis will be stored
-output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\ID046_analysiert_22102021\analysis_26102021"
+output_directory = r"D:/Files_Reutlingen_Jenny/19-04-15/190415_paper"
 
 
+# for reutlingen files: manually correct the filename, medium, recording date
+# cave: the filename is essential to only grab the correct folders later
+filename= '190415_03_Cortex-synChR2-A_aCSF_rewashafterhcsf'
+medium = 'aCSF'
+recordingdate = '2019-04-15'
 
 
 # change to the working_directory
@@ -113,11 +118,6 @@ ACTUAL SCRIPT
 
 '''
 
-# for reutlingen files: manually correct the filename, medium, recording date
-# cave: the filename is essential to only grab the correct folders later
-filename= '2021-05-17_cortex_div11_aCSF_ID046_30µMNorepinephrine_spont_1'
-medium = 'aCSF'
-recordingdate = '2021-05-07'
 
 
 # for aachen files: write loop to get the above info automatically
@@ -153,7 +153,8 @@ spikedics = {}
 
 for folder in folderlist:
     os.chdir(os.path.join(working_directory, folder))
-    timekey = folder.split('_')[9:12]
+    # cave: here the slicing needs to be adjusted dependent on reutlingen filenames
+    timekey = folder.split('_')[6:9]
     timekey = '_'.join(timekey)
     
     # load the info_dic_file
