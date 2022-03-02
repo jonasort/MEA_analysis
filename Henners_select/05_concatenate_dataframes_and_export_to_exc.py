@@ -11,7 +11,7 @@ DIRECTORIES
 '''
 
 
-scriptdirectory = r"C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
+scriptdirectory = r"//Users/naila/Documents/GitHub/MEA_analysis/CSA_JO"
 
 '''
 EDIT HERE, HENNER
@@ -19,8 +19,8 @@ EDIT HERE, HENNER
 input directory = directory where the dataframes from 04 script are stored
 output directory = directory where you want the the .xlsx files to be exported to
 '''
-input_directory = r"D:\Files_Reutlingen_Jenny\dataframes"
-output_directory = r"D:\Files_Reutlingen_Jenny\dataframes"
+input_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
+output_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
 
 
 
@@ -52,10 +52,9 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn import preprocessing
 
-from Butterworth_Filter import butter_bandpass, butter_bandpass_filter
+from dep_Butterworth_Filter import butter_bandpass, butter_bandpass_filter
 
 import glob
-from plot_signal_and_spikes import plot_signal_and_spikes_from_bandpassfilteredsignal
 import time
 
 from neo.core import AnalogSignal

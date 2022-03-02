@@ -10,16 +10,16 @@ DIRECTORIES
 '''
 
 
-scriptdirectory = r"C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Tübingen_Branch"
+scriptdirectory = r"//Users/naila/Documents/GitHub/MEA_analysis/CSA_JO"
 
 # outputdirectory must already contain the .pkl file
-output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\trial_temp\Henner\ID046"
+output_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
 
 # filenam
-filename = "2021-05-17_cortex_div11_aCSF_ID046_30µMNorepinephrine_spont_1"
+filename = "cortex_div11_aCSF_ID046_nodrug_spont_1"
 
 # directory where the .npy dictionaries of lfp_signal are stored
-temp_dir = r"D:\MEA_DATA_Aachen\ANALYZED\trial_temp\Henner\ID046\spike_extraction"
+temp_dir = r"/Users/naila/Documents/DATA/ANALYZED/ID046/spike_extraction"
 
 
 
@@ -53,10 +53,10 @@ from sklearn.mixture import GaussianMixture
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-from Butterworth_Filter import butter_bandpass, butter_bandpass_filter
+from dep_Butterworth_Filter import butter_bandpass, butter_bandpass_filter
 
 import glob
-from plot_signal_and_spikes import plot_signal_and_spikes_from_bandpassfilteredsignal
+#from plot_signal_and_spikes import plot_signal_and_spikes_from_bandpassfilteredsignal
 import time
 
 from neo.core import AnalogSignal
@@ -835,7 +835,7 @@ os.chdir(output_directory)
 
 # import the MAIN Dictionary
 MAIN_RECORDING_DICTIONARY = pickle.load(open(
-    os.path.join(output_directory+'\\MAIN_RECORDING_Dictionary_'+filename+'.pkl'),
+    os.path.join(output_directory+'/MAIN_RECORDING_Dictionary_'+filename+'.pkl'),
     "rb")
     )
 
@@ -891,11 +891,11 @@ for i in folderlist:
     lowpassfile = glob.glob('*lowpass*.npy')[0]
     bandpassfile = glob.glob('*bandpass*.npy')[0]
     
-    lfp_down_file = glob.glob('*LFP_DOWNS*.npy')[1]
-    lfp_up_file = glob.glob('*LFP_UPS*.npy')[1]
+    lfp_down_file = glob.glob('*LFP_DOWNS*.npy')[0]
+    lfp_up_file = glob.glob('*LFP_UPS*.npy')[0]
     
-    lfp_amp_down_file = glob.glob('*LFP_Amplitudes_DOWNS*.npy')[0]
-    lfp_amp_up_file = glob.glob('*LFP_Amplitudes_UPS*.npy')[0]
+    lfp_amp_down_file = glob.glob('*LFP_Amp_DOWNS*.npy')[0]
+    lfp_amp_up_file = glob.glob('*LFP_Amp_UPS*.npy')[0]
     
     cs_lfp_down_file = glob.glob('*cs_lfp_down*.npy')[0]
     cs_lfp_up_file = glob.glob('*cs_lfp_up*.npy')[0]
@@ -1083,7 +1083,7 @@ for key in network_bursts_dictionary:
 
 
 # save the dataframe
-with open(os.path.join(output_directory+'\\DATAFRAME_'+filename+'.pkl'), 'wb') as f:
+with open(os.path.join(output_directory+'/DATAFRAME_'+filename+'.pkl'), 'wb') as f:
     pickle.dump(df, f)
 
 

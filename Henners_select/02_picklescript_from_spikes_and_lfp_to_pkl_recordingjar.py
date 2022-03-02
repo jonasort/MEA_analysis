@@ -18,15 +18,15 @@ import pickle
 
 
 # this directory for the extracted spikes and lfp dictionaries
-working_directory = r"D:\MEA_DATA_Aachen\ANALYZED\trial_temp\Henner\ID046\spike_extraction"
+working_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046/spike_extraction"
 
 # second directory/recording where the rest of analysis will be stored
-output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\trial_temp\Henner\ID046"
+output_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
 
 
 # for reutlingen files: manually correct the filename, medium, recording date
 # cave: the filename is essential to only grab the correct folders later
-filename= '2021-05-17_cortex_div11_aCSF_ID046_30µMNorepinephrine_spont_1'
+filename= 'cortex_div11_aCSF_ID046_nodrug_spont_1'
 medium = 'aCSF'
 recordingdate = '2019-05-17'
 
@@ -141,7 +141,7 @@ Infos_Recording['medium']=medium
 
 # the folderlist will contain all 120second long subfolders
 # the filename is 
-folderlist = glob.glob(filename+'*')
+folderlist = glob.glob('*'+filename+'*')
 
 
 
@@ -428,7 +428,7 @@ for ax in axs:
     for i in bursts_seconds:
         axs[1].axvspan(i[0], i[1], facecolor = '#5B89A6', alpha = 0.3)
 fig.savefig(os.path.join(output_directory, 
-                         filename+ '__raster_firingrate_plot.png'), dpi=300)
+                         filename+ '_raster_firingrate_plot.png'), dpi=300)
 
 
 

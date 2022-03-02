@@ -47,10 +47,10 @@ DIRECTORIES
 """
 
 # adjust the directories first!
-scriptdirectory = r"C:\Users\User\Documents\JO\gitkraken\MEA_analysis\CSA_JO"
-inputdirectory = r"D:\MEA_DATA_Aachen\ANALYZED\trial_temp\Henner\ID046"
+scriptdirectory = r"//Users/naila/Documents/GitHub/MEA_analysis/CSA_JO"
+inputdirectory = r"/Users/naila/Documents/DATA/PREPROCESSED/ID046"
 
-outputdirectory = r"D:\MEA_DATA_Aachen\ANALYZED\trial_temp\Henner\ID046\spike_extraction"
+outputdirectory = r"/Users/naila/Documents/DATA/ANALYZED/spike_extraction"
 
 """
 IMPORTS
@@ -65,8 +65,6 @@ import numpy as np
 import neo
 import pandas as pd
 import h5py
-from hdfviewer.widgets.HDFViewer import HDFViewer
-from hdfviewer.widgets.PathSelector import PathSelector
 import McsPy
 import sys, importlib, os
 import McsPy.McsData
@@ -75,9 +73,6 @@ from McsPy import ureg, Q_
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.widgets import Slider
-import bokeh.io
-import bokeh.plotting
-from bokeh.palettes import Spectral11
 from scipy.signal import butter, lfilter, freqz, find_peaks, correlate, gaussian, filtfilt
 from scipy import stats
 from scipy import signal
@@ -597,7 +592,7 @@ for file in filelist:
     filebase = filedatebase + '_' + filenamebase
     
     ## for Tübingen
-    ##filebase = filename.split('.')[0]
+    #filebase = filename.split('.')[0]
     
     
     print('Working on file: ' +filename)
@@ -669,7 +664,7 @@ for file in filelist:
                 outputdirectory, filebase + '_from_'+str(starting_point) + 
                 '_to_' +str(stopping_point) + '_analyzed_on_'+timestr)
             try:
-                os.mkdir(outpath)
+                os.makedirs(outpath)
             except OSError:
                 print ("Creation of the directory %s failed" % outpath)
             else:
@@ -1233,16 +1228,16 @@ for file in filelist:
             
             np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_UPS.npy', lfp_ups)
             np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_DOWNS.npy', lfp_downs)
-            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amplitudes_UPS.npy', lfp_amplitudes_up)
-            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amplitudes_DOWNS.npy', lfp_amplitueds_down)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amp_UPS.npy', lfp_amplitudes_up)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_LFP_Amp_DOWNS.npy', lfp_amplitueds_down)
             np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_lowpass_signal.npy', lowpass_signal_dic) 
             np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_bandpass_signal.npy', bandpass_signal_dic) 
             
             
             np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_ups.npy', cs_lfp_ups) 
             np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_downs.npy', cs_lfp_downs) 
-            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_amplitueds_up.npy', cs_lfp_amplitudes_up)
-            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_amplitudes_do.npy', cs_lfp_amplitudes_down)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_amp_up.npy', cs_lfp_amplitudes_up)
+            np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_cs_lfp_amp_do.npy', cs_lfp_amplitudes_down)
             np.save('trial.npy', cs_lfp_amplitudes_down)
         
             

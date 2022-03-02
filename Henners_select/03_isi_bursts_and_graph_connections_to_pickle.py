@@ -28,11 +28,11 @@ Directories
 
 '''
 
-working_directory =r"D:\MEA_DATA_Aachen\ANALYZED\trial_temp\Henner\ID046"
+working_directory =r"/Users/naila/Documents/DATA/ANALYZED/ID046"
 
-output_directory = r"D:\MEA_DATA_Aachen\ANALYZED\trial_temp\Henner\ID046"
+output_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
 
-filename = "2021-05-17_cortex_div11_aCSF_ID046_30µMNorepinephrine_spont_1"
+filename = "cortex_div11_aCSF_ID046_nodrug_spont_1"
 
 os.chdir(working_directory)
 
@@ -584,7 +584,7 @@ filelist = glob.glob('*'+filename+'*.pkl')
 
 # load in the pickle
 MAIN_RECORDING_DICTIONARY = pickle.load(
-    open(os.path.join(output_directory+'\\MAIN_RECORDING_Dictionary_'+filename+'.pkl'), 
+    open(os.path.join(output_directory+'/MAIN_RECORDING_Dictionary_'+filename+'.pkl'), 
          "rb"))
 
 
@@ -1043,7 +1043,7 @@ fig.savefig(filename+'_betweenness_centrality_0p1Gz_04102021.png', dpi = 300, bb
 MAIN_RECORDING_DICTIONARY['GRAPH_shared_bursts'] = G
 
 
-with open(os.path.join(output_directory+'\\MAIN_RECORDING_Dictionary_'+filename+'.pkl'), 'wb') as f:
+with open(os.path.join(output_directory+'/MAIN_RECORDING_Dictionary_'+filename+'.pkl'), 'wb') as f:
     pickle.dump(MAIN_RECORDING_DICTIONARY, f)
 
 
