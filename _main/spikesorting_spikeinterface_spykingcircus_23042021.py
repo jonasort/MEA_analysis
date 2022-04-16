@@ -34,9 +34,9 @@ import seaborn as sns
 from time import strftime
 
 # main directory of the folder to analyse
-filedirec = r"D:\MEA_DATA_Aachen\ANALYZED\20210510_cortex_div4"
+filedirec = r"/Users/naila/Documents/DATA/ANALYZED/ss_trial"
 # sub directory with the actual data
-inputdirectory = r"D:\MEA_DATA_Aachen\PREPROCESSED\20210510_cortex_div4"
+inputdirectory = r"/Users/naila/Documents/DATA/PREPROCESSED/trial_vicky"
 
 os.chdir(inputdirectory)
 
@@ -207,7 +207,7 @@ for i in filelist:
     timestr = strftime("%d%m%Y")
     outputdirectory = os.path.join(filedirec, '_output_Spikesorting_'+ timestr).replace('\\','/')
     
-    probe_file="C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb"
+    probe_file="/Users/naila/Documents/GitHub/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb"
     #outputdirectory_SC='D:/Files_Reutlingen_Jenny/main_191021extra/191021_extra_Spikesorting/output_Spykingcirucs'
     
     # one outpath is created for every datafile
@@ -242,7 +242,7 @@ for i in filelist:
     
     # load the probe file
     recording_cmrprobe=recording_MEA.load_probe_file(
-        probe_file="C:/Users/User/Documents/JO/gitkraken/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb")
+        probe_file="/Users/naila/Documents/GitHub/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb")
     
     # divide the recording into subrecords, subrecords is a dictionary
     subrecords = divide_recording_to_sub(recording_cmrprobe, 140)

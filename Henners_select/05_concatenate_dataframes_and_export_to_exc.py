@@ -19,8 +19,8 @@ EDIT HERE, HENNER
 input directory = directory where the dataframes from 04 script are stored
 output directory = directory where you want the the .xlsx files to be exported to
 '''
-input_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
-output_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
+input_directory = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006"
+output_directory = input_directory
 
 
 

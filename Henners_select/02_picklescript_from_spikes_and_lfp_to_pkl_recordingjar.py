@@ -18,17 +18,17 @@ import pickle
 
 
 # this directory for the extracted spikes and lfp dictionaries
-working_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046/spike_extraction"
+working_directory = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006/spike extraction"
 
 # second directory/recording where the rest of analysis will be stored
-output_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
+output_directory = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006"
 
 
 # for reutlingen files: manually correct the filename, medium, recording date
 # cave: the filename is essential to only grab the correct folders later
-filename= 'cortex_div11_aCSF_ID046_nodrug_spont_1'
+filename = 'cortexmouse_div21_biometra_ID006_nodrug_spont_1'
 medium = 'aCSF'
-recordingdate = '2019-05-17'
+recordingdate ='2022-03-17'
 
 
 # change to the working_directory
@@ -47,8 +47,8 @@ def get_isi_single_channel(spikedic):
     
     '''
     input: 
-        spikedic with keys = channellabels, values = spiketimes in raw ticks
-    
+        spikedic with keys = channellabes, values = spiketime in raw ticks
+        
     
     returns: 
 

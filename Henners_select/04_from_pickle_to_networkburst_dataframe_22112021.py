@@ -13,13 +13,15 @@ DIRECTORIES
 scriptdirectory = r"//Users/naila/Documents/GitHub/MEA_analysis/CSA_JO"
 
 # outputdirectory must already contain the .pkl file
-output_directory = r"/Users/naila/Documents/DATA/ANALYZED/ID046"
+output_directory = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006"
 
 # filenam
-filename = "cortex_div11_aCSF_ID046_nodrug_spont_1"
+filename = 'cortexmouse_div21_biometra_ID006_nodrug_spont_1'
 
 # directory where the .npy dictionaries of lfp_signal are stored
-temp_dir = r"/Users/naila/Documents/DATA/ANALYZED/ID046/spike_extraction"
+temp_dir = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006/spike extraction"
+
+
 
 
 
