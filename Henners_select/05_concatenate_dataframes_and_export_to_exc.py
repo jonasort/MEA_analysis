@@ -19,7 +19,7 @@ EDIT HERE, HENNER
 input directory = directory where the dataframes from 04 script are stored
 output directory = directory where you want the the .xlsx files to be exported to
 '''
-input_directory = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006"
+input_directory = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/2203CE047"
 output_directory = input_directory
 
 
@@ -107,8 +107,8 @@ df = df.loc[(df['number_of_active_channels'] <= 250)]
 
 # filter out channels with low active channels, i.e., < 10 % of totally active channels
 # and at least five active channels
-df = df.loc[(df['number_of_active_channels'] > 0.1*df['active_channels_whole_recording'])]
-df = df.loc[(df['number_of_active_channels'] > 5)]
+#df = df.loc[(df['number_of_active_channels'] > 0.1*df['active_channels_whole_recording'])]
+#df = df.loc[(df['number_of_active_channels'] > 5)]
 
 # get a clean meadium from the filename
 df['medium'] = df['filename'].str.split('_').str[3]

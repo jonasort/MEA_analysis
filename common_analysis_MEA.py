@@ -70,7 +70,7 @@ def get_MEA_Channel_labels(np_analog_for_filter):
 
 
 
-inputdirectory  = r"/Users/naila/Documents/DATA/PREPROCESSED/trial_vicky"
+inputdirectory  = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/220328_humancortex_div4/spike extraction"
 
 os.chdir(inputdirectory)
 probe_file="/Users/naila/Documents/GitHub/MEA_analysis/Spikesorting/MCS_MEA_256_100µM_spacing.prb"

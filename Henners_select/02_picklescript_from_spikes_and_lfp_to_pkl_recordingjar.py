@@ -18,17 +18,17 @@ import pickle
 
 
 # this directory for the extracted spikes and lfp dictionaries
-working_directory = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006/spike extraction"
+working_directory = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/2203CE047/spike extraction"
 
 # second directory/recording where the rest of analysis will be stored
-output_directory = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006"
+output_directory = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/2203CE047"
 
 
 # for reutlingen files: manually correct the filename, medium, recording date
 # cave: the filename is essential to only grab the correct folders later
-filename = 'cortexmouse_div21_biometra_ID006_nodrug_spont_1'
+filename = 'cortex_div14_biometra_ID2203047CE_nodrug_spont_2'
 medium = 'aCSF'
-recordingdate ='2022-03-17'
+recordingdate ='2022-03-22'
 
 
 # change to the working_directory
@@ -142,7 +142,7 @@ Infos_Recording['medium']=medium
 # the folderlist will contain all 120second long subfolders
 # the filename is 
 folderlist = glob.glob('*'+filename+'*')
-
+folderlist.sort()
 
 
 
@@ -154,7 +154,7 @@ spikedics = {}
 for folder in folderlist:
     os.chdir(os.path.join(working_directory, folder))
     # cave: here the slicing needs to be adjusted dependent on reutlingen filenames
-    timekey = folder.split('_')[6:9]
+    timekey = folder.split('_')[9:12]
     timekey = '_'.join(timekey)
     
     # load the info_dic_file
@@ -242,7 +242,7 @@ spikedic_MAD = spikedic_MAD_full
 main_recording_dictionary['spikedic_MAD'] = spikedic_MAD
 
 # and save it separately
-np.save(os.path.join(output_directory, filename +'_full_spikedic.npy'), spikedic_MAD_full)
+np.save(os.path.join(output_directory, filename +'_full_spikedic.npy'), spikedic_MAD)
 
 
 # relevant factor: minimal amount of spikes to be relevant
@@ -449,7 +449,7 @@ add the basic spiking statistics to the recording
 
 '''
 # create the dictionary with isi + add it
-isi_dictionary = get_isi_single_channel(spikedic_MAD_full)
+isi_dictionary = get_isi_single_channel(spikedic_MAD)
 main_recording_dictionary['isi_dictionary'] = isi_dictionary
 
 
