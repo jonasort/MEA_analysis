@@ -93,7 +93,7 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=4):
      
 
 
-def detect_peaks(data):
+def detect_peaks(y):
     threshold =5 * np.std(y) #np.median(np.absolute(y)/0.6745)
     peaks, _ = find_peaks(-y, height= threshold, distance=50)   
     return peaks,y,threshold
@@ -397,7 +397,7 @@ def plot_waveforms(cutouts, fs, pre, post, n=100, color='k', show=True):
         plt.show()
         
         
-def butter_lowpass_filter(data, cutoff, fs, order):
+def butter_lowpass_filter(data, cutoff, fs, order, nyq):
 
     normal_cutoff = cutoff / nyq
     # Get the filter coefficients 
@@ -422,7 +422,9 @@ def get_next_maximum(signal, index, max_samples_to_search):
 
 
 
-def lfp_crossing_detection(lowpass_filtered_signal, lfp_threshold, minimal_length = 0.05):
+def lfp_crossing_detection(lowpass_filtered_signal, lfp_threshold, 
+                           tick, scale_factor_for_second,
+                           time_in_sec, minimal_length):
     
     '''
     parameters 
@@ -647,8 +649,8 @@ def invert_layerdic(layer_dic):
     '''
     layerdic_invert = {}
 
-    for key in layerdic:
-        for i in layerdic[key]:
+    for key in layer_dic:
+        for i in layer_dic[key]:
             layerdic_invert[i]=key
             
             
@@ -788,44 +790,6 @@ def bin_isi(isi_alone_dic, binsize, binmax=bool, binmaxnumber=None):
     return histo_ISI_dic
 
 
-def bin_lnisi(isi_alone_dic, start_in_microseconds, stop_in_microseconds, totalbins, binmax):
-    '''
-
-    Parameters
-    ----------
-    isi_alone_dic : dic
-        dictionary with all ISI for every channel 
-    binsize: int
-        expects int in microseconds that defines bin-width
-    Returns
-    -------
-    histo_ISI_dic:
-        dic with key:channellabel, value: list with bincounts per logarithmic spaced bins
-
-    '''
-    isi_bins = []
-    isi_bins_list = []
-    isi_bin_count = []
-    histo_ln_ISI_dic = {}
-    for key in isi_alone_dic:
-        if binmax==True:
-            isi_bin_count=[]
-            isibins=create_ln_bins(start_in_microseconds, stop_in_microseconds, totalbins)
-            isi_bins_list=[] 
-            for i in range(0, len(isibins)):
-                isi_bins=[]
-                for a in isi_alone_dic[key]:
-                    if isibins[i][0] <= a < isibins[i][1]:
-                        isi_bins.append(a)
-                isi_bins_list.append(isi_bins)
-            for i in range(0, (len(isi_bins_list)-1)):
-                isi_bin_count.append(len(isi_bins_list[i]))
-            histo_ln_ISI_dic[key]=isi_bin_count
-        #else:
-            # noch schreiben für variable maximalnummer an bins
-            
-    return histo_ln_ISI_dic, isibins
-
 
 def get_allchannel_ISI_bins(histo_ISI_dic):
     '''
@@ -851,7 +815,7 @@ def get_allchannel_ISI_bins(histo_ISI_dic):
     return np.array(network_ISI)
 
 
-def get_burst_threshold(df_with_CMA):
+def get_burst_threshold(df_with_CMA, network_ISI):
     '''
     
 
@@ -895,7 +859,7 @@ def get_burst_threshold(df_with_CMA):
     return CMAalpha, CMAalpha2, maxCMA, alpha1, alpha2
 
 
-def ISI_threshold_min(df_with_CMA, CMAalpha, CMAalpha2, binsize_in_micros):
+def ISI_threshold_min(df, CMAalpha, CMAalpha2, binsize_in_micros):
     '''
     '''
     indexfactor = df[df['CMA']>CMAalpha].index[-1] + 1
@@ -906,58 +870,9 @@ def ISI_threshold_min(df_with_CMA, CMAalpha, CMAalpha2, binsize_in_micros):
     return threshold_intraburst, threshold_burst_related
 
 
-def find_burst_starts(isi_alone, threshold_intraburst, spikedic):
-    '''
-    Parameters
-    ----------
-    isi_alone : TYPE
-        DESCRIPTION.
-    threshold_intraburst : TYPE
-        DESCRIPTION.
-    spikedic : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    '''
-    burststartdic = {}
-    noburstlist = []
-    #burststartlist = []
-    for key in isi_alone:
-        #print(key)
-        if len(isi_alone[key])<3:
-            noburstlist.append(isi_alone[key])
-        burststartlist=[]
-        counter = 0
-        while counter < (len(isi_alone[key])-4):
-            setter = 0
-            if isi_alone[key][counter]<threshold_intraburst:
-                setter +=1
-                if isi_alone[key][counter+setter] < threshold_intraburst:
-                    setter +=1
-                    if isi_alone[key][counter+setter] < threshold_intraburst:
-                        burststartlist.append((spikedic[key][counter])*tick) #CL: zusätzlich times tick to get all timestamps in ms
-                        setter += 1
-                        while isi_alone[key][counter+setter]<threshold_intraburst and (counter+setter)< (len(isi_alone[key])-4):
-                            setter +=1
-                            #print('burst '+str(setter))
-                        setter +=1
-                    else:
-                        counter +=1
-                else:
-                    counter +=1
-                counter = counter + setter + 1
-            else:
-                counter +=1
-            #print(str(key) + str(counter))
-        burststartdic[key]=burststartlist
-        
-    return burststartdic   
 
 
-def find_burst_starts_and_length(isi_alone, threshold_intraburst, spikedic):
+def find_burst_starts_and_length(isi_alone, threshold_intraburst, spikedic, tick):
     '''
     Parameters
     ----------
@@ -1014,65 +929,6 @@ def find_burst_starts_and_length(isi_alone, threshold_intraburst, spikedic):
         
     return burststartdic   
 
-def find_burst_starts_and_length(isi_alone, threshold_intraburst, spikedic):
-    '''
-    Parameters
-    ----------
-    isi_alone : dict
-        k = channellabel, values = interspike intervals in microseconds
-    threshold_intraburst : float
-        the calculated threshold for a single channel burst in microseconds
-    spikedic : dict
-        k = channellabel, values = spiketimes in ticks
-        
-
-    Returns
-    -------
-    burststart_end_dic : dict
-        k = channellabel, values = tuple(a,b) with a = start of a burst x, b= end of burst x 
-        with all times in microseconds
-
-    '''
-    burststartdic = {}
-    noburstlist = []
-    #burststartlist = []
-    for key in isi_alone:
-        #print(key)
-        if len(isi_alone[key])<3:
-            noburstlist.append(isi_alone[key])
-        burststartlist=[]
-        counter = 0
-        while counter < (len(isi_alone[key])-3):
-            setter = 0
-            if isi_alone[key][counter]<threshold_intraburst:
-                setter +=1
-                if isi_alone[key][counter+setter] < threshold_intraburst:
-                    setter +=1
-                    if isi_alone[key][counter+setter] < threshold_intraburst:
-                        setter += 1
-                        burststart_spike = spikedic[key][counter]*tick
-                        burstend_spike = spikedic[key][counter+setter]*tick
-                        #burststartlist.append((spikedic[key][counter])*tick) #CL: zusätzlich times tick to get all timestamps in µs
-                        
-                        while isi_alone[key][counter+setter]<threshold_intraburst and (counter+setter)< (len(isi_alone[key])-3):
-                            setter +=1
-                            burstend_spike = spikedic[key][counter+setter]*tick
-                            
-                            #print('burst '+str(setter))
-                        burststartlist.append((burststart_spike, burstend_spike))
-                        #setter +=1
-                        counter = counter + setter
-                    else:
-                        counter +=1
-                else:
-                    counter +=1
-                
-            else:
-                counter +=1
-            #print(str(key) + str(counter))
-        burststartdic[key]=burststartlist
-        
-    return burststartdic  
 
 
 def extract_burststarts(burststartenddic):
@@ -1469,7 +1325,7 @@ def plot_waveforms(cutouts, fs, pre, post, n=100, color='k', show=True):
         plt.show()
 
         
-def butter_lowpass_filter(data, cutoff, fs, order):
+def butter_lowpass_filter(data, cutoff, fs, order, nyq):
 
     normal_cutoff = cutoff / nyq
     # Get the filter coefficients 
@@ -1551,7 +1407,8 @@ def subdivide_spiketrain(spiketrain, sub_start = 0, sub_stop = 10, tick=40, scal
 def find_network_burst_components(network_bursts_seconds, 
                                   Bursts, spikedic_MAD, ups, 
                                   up_amplitudes, downs, 
-                                  down_amplitudes, inverted_layerdic):
+                                  down_amplitudes, inverted_layerdic,
+                                  tick):
     
     '''
     ______________________
@@ -1949,8 +1806,12 @@ def main():
         if bool_location != ('A' or 'R'):
             print('Please insert a valid input.')
 
-    bool_modules = input('If you want the basic analysis (spikes only), enter b. If you want extended analysis (including lfp times), enter e: ')
-    
+
+    bool_modules = 0
+    while bool_modules != ('b'):
+        bool_modules = input('If you want the basic analysis (spikes only), enter b. If you want extended analysis (including lfp times), enter e: ')
+        if bool_modules != ('b'):
+            print('Pleas insert a valid input.')
     
     
     timestr = datetime.today().strftime('%Y-%m-%d')
@@ -2198,7 +2059,9 @@ def main():
                         order = 2       # sin wave can be approx represented as quadratic
                         n = int(T * fs) # total number of samples
                         
-                        butter_lowpass_filtered_signal = butter_lowpass_filter(signal_in_uV, cutoff, fs, order)
+                        butter_lowpass_filtered_signal = butter_lowpass_filter(signal_in_uV, 
+                                                                               cutoff, fs, order, 
+                                                                               nyq=nyq)
                         
                         
                         lfp_std = np.std(butter_lowpass_filtered_signal)
@@ -2207,7 +2070,9 @@ def main():
                         
                         
                         down_cross, up_cross, amp_down, amp_up = lfp_crossing_detection(
-                            butter_lowpass_filtered_signal, threshold_LFP, minimal_length=0.03)
+                            butter_lowpass_filtered_signal, threshold_LFP, tick=tick, 
+                            scale_factor_for_second=scale_factor_for_second, 
+                            time_in_sec=time_in_sec, minimal_length=0.03)
                         
                         
                         '''
@@ -2223,7 +2088,9 @@ def main():
                         cs_threshold = np.std(cs)*2
                         
                         cs_down_cross, cs_up_cross, cs_amp_down, cs_amp_up = lfp_crossing_detection(
-                            convolved_signal, cs_threshold, minimal_length=0.01)
+                            convolved_signal, cs_threshold, tick=tick, 
+                            scale_factor_for_second=scale_factor_for_second, 
+                            time_in_sec=time_in_sec, minimal_length=0.01)
                         
                         
                         
@@ -2730,7 +2597,7 @@ def main():
     
     #from here we will loop to each main outputfolder
     for mainfolder in outputfolderlist:
-        os.chdir(mainfolder)
+        os.chdir(os.path.join(mainoutputdirectory, mainfolder))
         working_directory = os.path.join(mainoutputdirectory, mainfolder, 'spike_extraction')
         filename = mainfolder.split('/')[-1]
         
@@ -2879,7 +2746,8 @@ def main():
         main_recording_dictionary['spikedic_MAD'] = spikedic_MAD
         
         # and save it separately
-        np.save(os.path.join(mainoutputdirectory, mainfolder, filename +'_full_spikedic.npy'), spikedic_MAD_full)
+        np.save(os.path.join(mainoutputdirectory, mainfolder, filename +'_full_spikedic.npy'),           
+                spikedic_MAD_full)
         
         
         # relevant factor: minimal amount of spikes to be relevant
@@ -3219,7 +3087,7 @@ def main():
 
 
         # calculate the adaptive threshold
-        CMAalpha, CMAalpha2, maxCMA, alpha1, alpha2=get_burst_threshold(df) # threshold calculation
+        CMAalpha, CMAalpha2, maxCMA, alpha1, alpha2=get_burst_threshold(df, network_ISI=network_ISI) # threshold calculation
         threshold_intraburst, threshold_burst_related = ISI_threshold_min(df, CMAalpha, 
                                                                           CMAalpha2, binsize_for_ISI) #set thresholds
 
@@ -3247,7 +3115,8 @@ def main():
 
 
         # calculate the burststarts
-        burststart_end_dic = find_burst_starts_and_length(isi_alone, final_threshold, st_channel) 
+        burststart_end_dic = find_burst_starts_and_length(isi_alone, final_threshold, st_channel,
+                                                          tick=tick) 
 
         # add them to the Main dictionary
         MAIN_RECORDING_DICTIONARY['Bursts'] = burststart_end_dic
@@ -3746,6 +3615,8 @@ def main():
         MAINDATAFRAME.to_excel('output_MEA_recordings_overview.xlsx')
         MAINDATAFRAME.to_csv('output_MEA_recordings_overview.csv')
 
+
+    print('Finished the analysis. Check your outputfolder.')
         
 
                 
