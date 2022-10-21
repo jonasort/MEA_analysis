@@ -1,12 +1,14 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr 25 00:00:28 2022
+Created on Sun 21 August 00:00:28 2022
 
-@author: jonas
+@author: jonas ort, department of neurosurgery RWTH Aachen
 """
-
-
+'''
+Imports
+'''
 import os
 import sys
 import numpy as np
@@ -20,7 +22,7 @@ import McsPy.McsData
 import McsPy.McsCMOS
 from McsPy import ureg, Q_
 import matplotlib.pyplot as plt
-from scipy.signal import butter, lfilter, freqz, find_peaks, correlate, gaussian, filtfilt
+ofts from scipy.signal import butter, lfilter, freqz, find_peaks, correlate, gaussian, filtfilt
 from scipy import stats
 from scipy import signal
 from scipy import stats
@@ -68,11 +70,7 @@ import matplotlib.patches as mpatche
 
 
 '''
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-def print_usage():
-    eprint("Usage: python mea_script.py <input_directory>")
+Functions
 '''
 
 
@@ -1791,10 +1789,15 @@ def main():
     print(filelist)
     
     bool_channelmap = 0
-    while bool_channelmap != ('y' or 'n'):
-        bool_channelmap = input('Do you want to use a labeldictionary? Enter y or n: ')
-        if bool_channelmap != ('y' or 'n'):
+    while bool_channelmap != 1:
+        string_input = input('Do you want to use a labeldictionary? Enter y or n: ')
+        if string_input == 'y':
+            bool_channelmap = 1
+        elif string_input == 'n':
+            bool_channelmap = 1
+        else:
             print('Please insert a valid input.')
+    bool_channelmap = string_input
             
             
             
@@ -3178,18 +3181,21 @@ def main():
         # find the right layerdic from the layerdic 
         # matches = [match for match in layerdictionary_list if '*'+filename+'*' in match]
         
-        layerdic_filename = glob.glob('*'+'layerdic'+'*'+filename_substring+'*.txt')[0]
+        
+        if bool_channelmap == 'y':
+            
+            layerdic_filename = glob.glob('*'+'layerdic'+'*'+filename_substring+'*.txt')[0]
+        
+            
+            with open(layerdic_filename) as f:
+                data = f.read()
+          
+            # reconstructing the data as a dictionary
+            layerdic = ast.literal_eval(data)
+            
+            # change back to the last directory
+            os.chdir(save_cwd)
 
-        
-        with open(layerdic_filename) as f:
-            data = f.read()
-  
-        # reconstructing the data as a dictionary
-        layerdic = ast.literal_eval(data)
-        
-        # change back to the last directory
-        os.chdir(save_cwd)
-    
     
     
         '''
@@ -3286,115 +3292,115 @@ def main():
                                      'M14', 'M15', 'M16', 'N9', 'N10', 'N11', 'N12', 'N13', 'N14', 'N15', 'N16', 'O12', 'O13', 
                                      'O14', 'O15', 'O16', 'A12', 'A13', 'A14', 'A15', 'B13', 'B14', 'B15', 'B16', 'C14', 'C15', 'C16', 'D15', 'D16', 'E16']
         
+        if bool_channelmap == 'y':
         
-        
-        layer_colors={'layer1':'#F28749', 
-                      'layer2-3':'#B5D932', 
-                      'layer4':'#8C3A67', 
-                      'layer5-6':'#3F93A6', 
-                      'whitematter':'#C9F2EE',
-                      'noslice': '#FFFFFF'}
-        
-        inverted_layerdic = invert_layerdic(layerdic)
-
-        Infos_Anatomy = {}
-        Infos_Anatomy['layerdic_invert']=inverted_layerdic
-        Infos_Anatomy['layerdic']=layerdic
-
-        MAIN_RECORDING_DICTIONARY['Infos_Anatomy'] = Infos_Anatomy
-
-        # this block creates coordinates as on a MEA Grid for each channel
-        # coordinates are between 0 and 1 via np.linspace
-
-        # CAVE: I needs to be exchanged for J for Aachen Data, or i.e. the not MC Rack obtained data
-        if bool_location == 'A':
-            columnlist =['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','R']
-        if bool_location == 'R':
-            columnlist =['A','B','C','D','E','F','G','H','I','K','L','M','N','O','P','R']
-
-        mea_coordinates = np.linspace(0,1,16)
-        mea_positional_coordinates_dic = {}
-
-        for i in all_channels:
-            x_num = columnlist.index(i[0])
-            x_coord = mea_coordinates[x_num]
-            y_num = 17-int(i[1:]) # minus 1 since python starts counting at zero
-            y_coord = 1-(mea_coordinates[-y_num])
-            mea_positional_coordinates_dic[i] = [x_coord, y_coord]
-
-
-        #normalize the bursting time per unit 
-        normalized_bursting_time_per_unit_dic = {}
-        time_list = list(bursting_time_per_unit_dic.values())
-        maximum = max(time_list)
-        minimum = min(time_list)
-
-        #### Redo For Loop muss nach außen
-        try:
+            layer_colors={'layer1':'#F28749', 
+                          'layer2-3':'#B5D932', 
+                          'layer4':'#8C3A67', 
+                          'layer5-6':'#3F93A6', 
+                          'whitematter':'#C9F2EE',
+                          'noslice': '#FFFFFF'}
             
-            for key in bursting_time_per_unit_dic:
-                value = bursting_time_per_unit_dic[key]
-                normalized = (value - minimum)/(maximum-minimum)
-                normalized_bursting_time_per_unit_dic[key] = normalized
-        except ZeroDivisionError:
-            print('ZeroDivisionError - ')
-            
-
-        '''
-        The Burst Graph is produced
-        '''
-
-        burst_conn_graph = nx.Graph()
-        for key in simple_burst_connection:
-            for i in simple_burst_connection[key]:
-                burst_conn_graph.add_edge(key, i)
-
-        burst_conn_graph.number_of_nodes(), burst_conn_graph.number_of_edges()
-
-        G = burst_conn_graph
-
-
-        for i in G.nodes():
-            
+            inverted_layerdic = invert_layerdic(layerdic)
+    
+            Infos_Anatomy = {}
+            Infos_Anatomy['layerdic_invert']=inverted_layerdic
+            Infos_Anatomy['layerdic']=layerdic
+    
+            MAIN_RECORDING_DICTIONARY['Infos_Anatomy'] = Infos_Anatomy
+    
+            # this block creates coordinates as on a MEA Grid for each channel
+            # coordinates are between 0 and 1 via np.linspace
+    
+            # CAVE: I needs to be exchanged for J for Aachen Data, or i.e. the not MC Rack obtained data
+            if bool_location == 'A':
+                columnlist =['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','R']
+            if bool_location == 'R':
+                columnlist =['A','B','C','D','E','F','G','H','I','K','L','M','N','O','P','R']
+    
+            mea_coordinates = np.linspace(0,1,16)
+            mea_positional_coordinates_dic = {}
+    
+            for i in all_channels:
+                x_num = columnlist.index(i[0])
+                x_coord = mea_coordinates[x_num]
+                y_num = 17-int(i[1:]) # minus 1 since python starts counting at zero
+                y_coord = 1-(mea_coordinates[-y_num])
+                mea_positional_coordinates_dic[i] = [x_coord, y_coord]
+    
+    
+            #normalize the bursting time per unit 
+            normalized_bursting_time_per_unit_dic = {}
+            time_list = list(bursting_time_per_unit_dic.values())
+            maximum = max(time_list)
+            minimum = min(time_list)
+    
+            #### Redo For Loop muss nach außen
             try:
-                node_key = i
-                coordinate = mea_positional_coordinates_dic[node_key]
-                G.nodes[node_key]['pos']=coordinate
-                G.nodes[node_key]['layer']=inverted_layerdic[i]
-                G.nodes[node_key]['color']=layer_colors[inverted_layerdic[i]]
+                
+                for key in bursting_time_per_unit_dic:
+                    value = bursting_time_per_unit_dic[key]
+                    normalized = (value - minimum)/(maximum-minimum)
+                    normalized_bursting_time_per_unit_dic[key] = normalized
+            except ZeroDivisionError:
+                print('ZeroDivisionError - ')
+                
+    
+            '''
+            The Burst Graph is produced
+            '''
+    
+            burst_conn_graph = nx.Graph()
+            for key in simple_burst_connection:
+                for i in simple_burst_connection[key]:
+                    burst_conn_graph.add_edge(key, i)
+    
+            burst_conn_graph.number_of_nodes(), burst_conn_graph.number_of_edges()
+    
+            G = burst_conn_graph
+    
+    
+            for i in G.nodes():
                 
                 try:
-                    G.nodes[node_key]['degree_centrality']=nx.degree_centrality(G)[i]
-                except:
-                    print('degree centrality failed')
+                    node_key = i
+                    coordinate = mea_positional_coordinates_dic[node_key]
+                    G.nodes[node_key]['pos']=coordinate
+                    G.nodes[node_key]['layer']=inverted_layerdic[i]
+                    G.nodes[node_key]['color']=layer_colors[inverted_layerdic[i]]
                     
-                try:
-                    G.nodes[node_key]['betweenness_centrality']=nx.betweenness_centrality(G, k=10, endpoints = True)[i]
-                except:
-                    print('betweennes centrality failed')
-                    
-                try:
-                    G.nodes[node_key]['bursting_time_normalized']=normalized_bursting_time_per_unit_dic[i]
-                except:
-                    print('normalized bursting time not possible')
-            except KeyError:
-                print('channel ', node_key, ' failed')
-
-
-        pos = nx.get_node_attributes(G, 'pos')
-        layer = nx.get_node_attributes(G, 'layer')
-        color = nx.get_node_attributes(G, 'color')
-        burst_time = nx.get_node_attributes(G, 'bursting_time_normalized')
-        try:
-            centrality = nx.betweenness_centrality(G, k=10, endpoints = True)
-        except:
-            print('Degree Centrality Exception encountered')
-        
-        
-        
-        MAIN_RECORDING_DICTIONARY['GRAPH_shared_bursts'] = G
-
-
+                    try:
+                        G.nodes[node_key]['degree_centrality']=nx.degree_centrality(G)[i]
+                    except:
+                        print('degree centrality failed')
+                        
+                    try:
+                        G.nodes[node_key]['betweenness_centrality']=nx.betweenness_centrality(G, k=10, endpoints = True)[i]
+                    except:
+                        print('betweennes centrality failed')
+                        
+                    try:
+                        G.nodes[node_key]['bursting_time_normalized']=normalized_bursting_time_per_unit_dic[i]
+                    except:
+                        print('normalized bursting time not possible')
+                except KeyError:
+                    print('channel ', node_key, ' failed')
+    
+    
+            pos = nx.get_node_attributes(G, 'pos')
+            layer = nx.get_node_attributes(G, 'layer')
+            color = nx.get_node_attributes(G, 'color')
+            burst_time = nx.get_node_attributes(G, 'bursting_time_normalized')
+            try:
+                centrality = nx.betweenness_centrality(G, k=10, endpoints = True)
+            except:
+                print('Degree Centrality Exception encountered')
+            
+            
+            
+            MAIN_RECORDING_DICTIONARY['GRAPH_shared_bursts'] = G
+    
+    
         with open(os.path.join(mainoutputdirectory, mainfolder, 'MAIN_RECORDING_Dictionary_'+filename+'.pkl'), 'wb') as f:
             pickle.dump(MAIN_RECORDING_DICTIONARY, f)
         
@@ -3438,15 +3444,19 @@ def main():
         isi_average_dic = MAIN_RECORDING_DICTIONARY['isi_average_dic']
         Infos_Recording = MAIN_RECORDING_DICTIONARY['Infos_Recording']
         Infos_Analysis = MAIN_RECORDING_DICTIONARY['Infos_Analysis']
-        Infos_Anatomy = MAIN_RECORDING_DICTIONARY['Infos_Anatomy']
+        if bool_channelmap == 'y':
+            Infos_Anatomy = MAIN_RECORDING_DICTIONARY['Infos_Anatomy']
         Bursts = MAIN_RECORDING_DICTIONARY['Bursts']
         Interburst_Intervals = MAIN_RECORDING_DICTIONARY['Interburst-Intervals']
         bursting_time_per_channel = MAIN_RECORDING_DICTIONARY['bursting_time_per_channel']
         bursts_per_channel = MAIN_RECORDING_DICTIONARY['bursts_per_channel']
-        burst_connections = MAIN_RECORDING_DICTIONARY['burst_connections']
+        
+        if bool_channelmap == 'y':
+            burst_connections = MAIN_RECORDING_DICTIONARY['burst_connections']
+        
+            inverted_layerdic = Infos_Anatomy['layerdic_invert']
+            layerdic = Infos_Anatomy['layerdic']
         Basics = MAIN_RECORDING_DICTIONARY['Basics']
-        inverted_layerdic = Infos_Anatomy['layerdic_invert']
-        layerdic = Infos_Anatomy['layerdic']
         scale_factor_for_second = 1e-06
         timelengthrecording_s = Infos_Recording['timelengthrecording_s']
         
