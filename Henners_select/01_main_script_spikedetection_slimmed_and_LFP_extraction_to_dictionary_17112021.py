@@ -48,9 +48,9 @@ DIRECTORIES
 
 # adjust the directories first!
 scriptdirectory = r"//Users/naila/Documents/GitHub/MEA_analysis/CSA_JO"
-inputdirectory = r"//Users/naila/Documents/DATA/PREPROCESSED/ID006"
+inputdirectory = r"//Users/naila/Documents/DATA/PREPROCESSED/Victoria Witzig/Mouse/220408_C_M_DIV21_ID031"
 
-outputdirectory = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006/spike extraction"
+outputdirectory = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/Mouse/220408_C_M_DIV21_ID031/spike extraction"
 
 """
 IMPORTS

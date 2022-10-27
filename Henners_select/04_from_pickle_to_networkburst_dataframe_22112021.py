@@ -13,13 +13,13 @@ DIRECTORIES
 scriptdirectory = r"//Users/naila/Documents/GitHub/MEA_analysis/CSA_JO"
 
 # outputdirectory must already contain the .pkl file
-output_directory = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006"
+output_directory = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/2203CE047"
 
 # filenam
-filename = 'cortexmouse_div21_biometra_ID006_nodrug_spont_1'
+filename = 'cortex_div14_biometra_ID2203047CE_nodrug_spont_2'
 
 # directory where the .npy dictionaries of lfp_signal are stored
-temp_dir = r"/Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/ID006/spike extraction"
+temp_dir = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/2203CE047/spike extraction"
 
 
 
@@ -858,7 +858,7 @@ burst_connections = MAIN_RECORDING_DICTIONARY['burst_connections']
 Basics = MAIN_RECORDING_DICTIONARY['Basics']
 inverted_layerdic = Infos_Anatomy['layerdic_invert']
 layerdic = Infos_Anatomy['layerdic']
-tick = 40
+tick = Infos_Recording['tick']
 scale_factor_for_second = 1e-06
 timelengthrecording_s = Infos_Recording['timelengthrecording_s']
 
@@ -1005,9 +1005,9 @@ for key in dd:
 
 network_bursts_dictionary, network_relevant_channels = find_network_burst_components(
                                   network_bursts_seconds, 
-                                  Bursts, spikedic_MAD, joined_lfp_up_dic, 
-                                  joined_lfp_ups_amp_dic, joined_lfp_down_dic,
-                                  joined_lfp_downs_amp_dic, inverted_layerdic)
+                                  Bursts, spikedic_MAD, ups=joined_lfp_up_dic, 
+                                  up_amplitudes=joined_lfp_ups_amp_dic, downs=joined_lfp_down_dic,
+                                  down_amplitudes=joined_lfp_downs_amp_dic, inverted_layerdic=inverted_layerdic)
 
 
 

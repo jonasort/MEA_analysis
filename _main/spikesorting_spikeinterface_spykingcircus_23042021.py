@@ -34,9 +34,9 @@ import seaborn as sns
 from time import strftime
 
 # main directory of the folder to analyse
-filedirec = r"/Users/naila/Documents/DATA/ANALYZED/ss_trial"
+filedirec = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/220328_humancortex_div4/spike extraction"
 # sub directory with the actual data
-inputdirectory = r"/Users/naila/Documents/DATA/PREPROCESSED/trial_vicky"
+inputdirectory = r"//Users/naila/Documents/DATA/ANALYZED/Victoria Witzig/220328_humancortex_div4/spike extraction"
 
 os.chdir(inputdirectory)
 
