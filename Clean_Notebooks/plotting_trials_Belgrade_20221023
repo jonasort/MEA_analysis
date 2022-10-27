@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Oct 23 16:00:52 2022
+
+@author: jonas
+"""
+
+import os
+import sys
+import numpy as np
+import neo
+import pandas as pd
+import h5py
+import ast
+import McsPy
+import sys, importlib, os
+import McsPy.McsData
+import McsPy.McsCMOS
+from McsPy import ureg, Q_
+import matplotlib.pyplot as plt
+from scipy.signal import butter, lfilter, freqz, find_peaks, correlate, gaussian, filtfilt
+from scipy import stats
+from scipy import signal
+from scipy import stats
+from scipy import signal
+from IPython.core.interactiveshell import InteractiveShell
+InteractiveShell.ast_node_interactivity = 'all'
+import numpy as np
+from sklearn.mixture import GaussianMixture
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import McsPy
+import McsPy.McsData
+from McsPy import ureg, Q_
+import matplotlib.pyplot as plt
+
+import warnings
+warnings.filterwarnings('ignore')
+
+import scipy
+import time
+import glob
+from pathlib import Path
+from datetime import datetime
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import pandas as pd
+import seaborn as sns
+import copy
+import pickle
+import fnmatch
+
+# Plotting
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import cm
+import seaborn as sns
+#networkx
+import plotly.graph_objects as go
+import networkx as nx
+import matplotlib.patches as mpatches
+
+
+
+def gaussian_smoothing(y, window_size=10, sigma=2):
+
+    filt = signal.gaussian(window_size, sigma)
+
+    return signal.convolve(y, filt, mode='same')
+
+
+
+
+
+
+
+
+
+
+
+working_directory = '/Users/jonas/Documents/DATA/MEA_DATA_Aachen_sample/output/2021-05-17_cortex_div11_aCSF_ID046_30µMNE_spont_1'
+os.chdir(working_directory)
+filename=working_directory.split('/')[-1]
+
+MAIN_RECORDING_DICTIONARY = pickle.load(open('MAIN_RECORDING_Dictionary_'+filename+'.pkl', "rb"))
+spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
+tick = MAIN_RECORDING_DICTIONARY['Infos_Recording']['tick']
+timelengthrecording_s = MAIN_RECORDING_DICTIONARY['Infos_Recording']['timelengthrecording_s']
+info_dics_subrecordings = MAIN_RECORDING_DICTIONARY['Infos_Recording']['info_dics_subrecordings']
+first_recording_timepoint = info_dics_subrecordings['0_to_120']['first_recording_timepoint']
+scale_factor_for_second = MAIN_RECORDING_DICTIONARY['Infos_Recording']['scale_factor_for_second']
+relevant_factor = timelengthrecording_s*0.05
+
+
+
+# to use when only relevant channels shall be plotted
+'''
+active_channels = 0
+spikedic_seconds = {}
+for key in spikedic_MAD:
+    relevant_factor = timelengthrecording_s*0.05
+    if len(spikedic_MAD[key])>relevant_factor:
+        sec_array = np.asarray(spikedic_MAD[key])*tick*scale_factor_for_second
+        spikedic_seconds[key]=sec_array
+        active_channels += 1
+spikearray_seconds = np.asarray(list(spikedic_seconds.values()))  
+'''
+
+# to use when all channels shall be plotted
+active_channels = 0
+spikedic_seconds = {}
+for key in spikedic_MAD:
+    sec_array = np.asarray(spikedic_MAD[key])*tick*scale_factor_for_second
+    spikedic_seconds[key]=sec_array
+    active_channels += 1
+spikearray_seconds = np.asarray(list(spikedic_seconds.values()))  
+
+# get a 1-D array with every detected spike
+scale_factor_for_milisecond = 1e-03
+full_spike_list = []
+full_spike_list_seconds = []
+for key in spikedic_MAD:
+    if len(spikedic_MAD[key])>relevant_factor:
+        x = list(np.asarray(spikedic_MAD[key])*scale_factor_for_milisecond*tick)
+        full_spike_list = full_spike_list + x
+
+        xs = list(np.asarray(spikedic_MAD[key])*scale_factor_for_second*tick)
+        full_spike_list_seconds = full_spike_list_seconds + xs
+full_spikes = sorted(full_spike_list)
+full_spikes_seconds = sorted(full_spike_list_seconds)
+
+
+
+ #define bins 
+binsize = 0.005 #seconds
+bins= np.arange(0, timelengthrecording_s+binsize, binsize)
+
+# make a histogram 
+full_spikes_binned = np.histogram(full_spikes_seconds, bins)[0]
+
+
+#trial of population burst plot as inspired by Andrea Corna
+bins = int(timelengthrecording_s / binsize)+1
+
+firing_rate_histogram = np.histogram(full_spikes_seconds, bins=bins)
+firing_rate = firing_rate_histogram[0]*200 #conversion to hertz
+
+
+
+N = int(1/binsize) # für eine Sekunde, das Sliding window, also letztlich number of bins
+plot_N = int(0.01/binsize)
+# gaussian smmothing fo the firing rate and moving average
+fr_gau = gaussian_smoothing(firing_rate)
+plot_fr_gau = gaussian_smoothing(firing_rate)
+
+ma_fr_gau = np.convolve(fr_gau, np.ones(N)/N, mode='full')
+plotting_ma_fr_gau = np.convolve(fr_gau, np.ones(plot_N)/plot_N, mode='full')
+
+fig = plt.plot(ma_fr_gau)
+fig
+plt.plot(plotting_ma_fr_gau)
