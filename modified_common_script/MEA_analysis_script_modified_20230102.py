@@ -3101,7 +3101,7 @@ def main():
             print('intraburst: ', threshold_intraburst, '   related: ', threshold_burst_related)
             
         else:
-            thershold_burst_related = 140000
+            threshold_burst_related, threshold_intraburst = 140000, 140000
 
 
         # final threshold is calculated from the burst related within our defined limits
