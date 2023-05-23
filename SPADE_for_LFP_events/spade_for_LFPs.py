@@ -64,13 +64,12 @@ FUNCTIONS
 
 '''
 
-def spikedic_to_neospiketrains(reloadedspikedic, recordinglength, scale_factor_for_second):
+def spikedic_to_neospiketrains(spikedic, recordinglength):
     
     spiketrains = [] 
     keylist_spiketrains = []
-    for key in reloadedspikedic:
-        key_array=np.asarray(reloadedspikedic[key])
-        key_array_sec=key_array*scale_factor_for_second
+    for key in spikedic:
+        key_array_sec=np.asarray(spikedic[key])
         
         # adjust the minimal amount of spikes per spiketrain
         if len(key_array_sec)>0:
@@ -86,7 +85,7 @@ def spikedic_to_neospiketrains(reloadedspikedic, recordinglength, scale_factor_f
 
 
 
-def cut_reloaded_spikedic(spikedic, start=0, stop=60, scale_factor_for_second):
+def cut_reloaded_spikedic(spikedic, scale_factor_for_second, start=0, stop=60):
 
     cutted_dic = {}
     temp_list = []
@@ -214,6 +213,7 @@ def extract_spikes_in_lfp_periods(spike_dict_seconds, lfp_start_times, window=1.
 
 
 
+
 '''
 
 SCRIPT
@@ -275,7 +275,11 @@ def main():
                                                           tick=tick,
                                                           scale_factor_for_second=scale_factor_for_second)
         
+        '''
+        remove
         
+        
+        '''
         active_channels = 0
         spikedic_seconds = {}
         for key in spikedic_MAD:
@@ -352,13 +356,70 @@ def main():
         fig.suptitle(filename)
         
         
-        #lfp_list = [4.56, 73.9, 99.36, 147.26, 167.29, 179.9, 194.14, 217.1, 238.38, 254.1]
+        
+        '''
+        remove until here
+
+        '''
+        lfp_list = [4.56, 73.9, 99.36, 147.26, 167.29, 179.9, 194.14, 217.1, 238.38, 254.1]
 
     
-        try_out = extract_spikes_in_lfp_periods(spike_dict = spikedic_MAD,
-                                                lfp_start_times = lfp_list, 
-                                                scale_factor = scale_factor_for_second,
-                                                tick = tick,
-                                                window=1.0)
+        spikedic_in_seconds = convert_spiketimes_to_seconds(spike_dict=spikedic_MAD, 
+                                                            scale_factor=scale_factor_for_second, 
+                                                            tick=tick)
+        
+        spikes_in_lfp_periods = extract_spikes_in_lfp_periods(spike_dict_seconds=spikedic_in_seconds, 
+                                                              lfp_start_times = lfp_list, 
+                                                              window=1.0)
+        
+        
+        
+        # add the parameters for SPADE
+        bin_size = 5 * pq.ms # time resolution to discretize the spiketrains
+        winlen = 10 # maximal pattern length in bins (i.e., sliding window)
+        dither = 20 * pq.ms
+        spectrum = '#'
+        alpha = 0.05
+        stat='fdr_bh'
+        
+        # get the recordinglenght needed to create the neo spikearray
+        
+        spikes = []
+        for key in spikes_in_lfp_periods:
+            spikes.append(spikes_in_lfp_periods[key])
+            spikearray = np.sort(np.concatenate(spikes, axis = 0))
+            spikelist = list(spikearray)
+
+        recordinglength = round(spikearray[-1]) + 1
+        
+        
+        # create the neo spiketrain
+        spiketrains, keylist_spiketrains = spikedic_to_neospiketrains(spikedic=spikes_in_lfp_periods, 
+                                                                      recordinglength=recordinglength)
+            
+        
+        result_spade = spade(spiketrains, bin_size=bin_size, winlen=winlen, n_surr=500, min_occ=4, min_spikes=2, min_neu=2, stat_corr=stat, 
+                       spectrum=spectrum, alpha=alpha)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
 
