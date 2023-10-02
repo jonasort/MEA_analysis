@@ -22,7 +22,7 @@ import McsPy.McsData
 import McsPy.McsCMOS
 from McsPy import ureg, Q_
 import matplotlib.pyplot as plt
-ofts from scipy.signal import butter, lfilter, freqz, find_peaks, correlate, gaussian, filtfilt
+from scipy.signal import butter, lfilter, freqz, find_peaks, correlate, gaussian, filtfilt
 from scipy import stats
 from scipy import signal
 from scipy import stats
