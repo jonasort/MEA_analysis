@@ -487,83 +487,88 @@ def main():
         '''
         # degree centrality
         
-        if dgc != None:
-            fig, ax = plt.subplots(1,1, figsize=(10,10))
-    
-            nx.draw_networkx_edges(
-                G,
-                pos, 
-                alpha=0.1, 
-                edge_color='#000000',
-                ax=ax,
-            )
-            nx.draw_networkx_nodes(
-                G,
-                pos,
-                nodelist=list(dgc.keys()),
-                node_size=100,
-                node_color=list(dgc.values()),
-                cmap=plt.cm.Reds,
-                ax=ax
-            )
-            
-            
-            ax.set_xlim(-0.05, 1.05)
-            ax.set_ylim(-0.05, 1.05)
-            #ax.set_xticks(columnlist)
-            ax.grid(ls=':')
-            #plt.axis("off")
-            #ax.legend(handles=layer_colors.values(), labels=layer_colors.keys())
-            plt.title('Graph - '+ filename + 'mean degree centrality = '+ str(mean_degree_centrality))
-            
-            fig.savefig(os.path.join(outputdirectory, 'graph_degreenes_centrality'+filename+'_.png'), 
-                        dpi = 300, bbox_inches='tight')
-            fig.savefig(os.path.join(outputdirectory, 'graph_degreenes_centrality'+filename+'_.eps'), 
-                        dpi = 300, bbox_inches='tight')
-            
-            plt.close(fig)
+        try:
+            if dgc != None:
+                fig, ax = plt.subplots(1,1, figsize=(10,10))
+        
+                nx.draw_networkx_edges(
+                    G,
+                    pos, 
+                    alpha=0.1, 
+                    edge_color='#000000',
+                    ax=ax,
+                )
+                nx.draw_networkx_nodes(
+                    G,
+                    pos,
+                    nodelist=list(dgc.keys()),
+                    node_size=100,
+                    node_color=list(dgc.values()),
+                    cmap=plt.cm.Reds,
+                    ax=ax
+                )
+                
+                
+                ax.set_xlim(-0.05, 1.05)
+                ax.set_ylim(-0.05, 1.05)
+                #ax.set_xticks(columnlist)
+                ax.grid(ls=':')
+                #plt.axis("off")
+                #ax.legend(handles=layer_colors.values(), labels=layer_colors.keys())
+                plt.title('Graph - '+ filename + 'mean degree centrality = '+ str(mean_degree_centrality))
+                
+                fig.savefig(os.path.join(outputdirectory, 'graph_degreenes_centrality'+filename+'_.png'), 
+                            dpi = 300, bbox_inches='tight')
+                fig.savefig(os.path.join(outputdirectory, 'graph_degreenes_centrality'+filename+'_.eps'), 
+                            dpi = 300, bbox_inches='tight')
+                
+                plt.close(fig)
+        except:
+            pass
             
         
         
         
         # eigenvector centrality
-        
-        if evc != None:
-            fig, ax = plt.subplots(1,1, figsize=(10,10))
-            
-            
-            nx.draw_networkx_edges(
-                G,
-                pos, 
-                alpha=0.1, 
-                edge_color='#000000',
-                ax=ax,
-            )
-            nx.draw_networkx_nodes(
-                G,
-                pos,
-                nodelist=list(evc.keys()),
-                node_size=100,
-                node_color=list(evc.values()),
-                cmap=plt.cm.Reds,
-                ax=ax
-            )
-            
-            
-            ax.set_xlim(-0.05, 1.05)
-            ax.set_ylim(-0.05, 1.05)
-            #ax.set_xticks(columnlist)
-            ax.grid(ls=':')
-            #plt.axis("off")
-            #ax.legend(handles=layer_colors.values(), labels=layer_colors.keys())
-            plt.title('Graph - '+ filename + 'mean eigenvector centrality = '+ str(eigenvector_centrality))
-            
-            fig.savefig(os.path.join(outputdirectory, 'eigenvector_centrality'+filename+'_.png'), 
-                        dpi = 300, bbox_inches='tight')
-            fig.savefig(os.path.join(outputdirectory, 'eigenvector_centrality'+filename+'_.eps'), 
-                        dpi = 300, bbox_inches='tight')
-            
-            plt.close(fig)
+        try:
+            if evc != None:
+                fig, ax = plt.subplots(1,1, figsize=(10,10))
+                
+                
+                nx.draw_networkx_edges(
+                    G,
+                    pos, 
+                    alpha=0.1, 
+                    edge_color='#000000',
+                    ax=ax,
+                )
+                nx.draw_networkx_nodes(
+                    G,
+                    pos,
+                    nodelist=list(evc.keys()),
+                    node_size=100,
+                    node_color=list(evc.values()),
+                    cmap=plt.cm.Reds,
+                    ax=ax
+                )
+                
+                
+                ax.set_xlim(-0.05, 1.05)
+                ax.set_ylim(-0.05, 1.05)
+                #ax.set_xticks(columnlist)
+                ax.grid(ls=':')
+                #plt.axis("off")
+                #ax.legend(handles=layer_colors.values(), labels=layer_colors.keys())
+                plt.title('Graph - '+ filename + 'mean eigenvector centrality = '+ str(eigenvector_centrality))
+                
+                fig.savefig(os.path.join(outputdirectory, 'eigenvector_centrality'+filename+'_.png'), 
+                            dpi = 300, bbox_inches='tight')
+                fig.savefig(os.path.join(outputdirectory, 'eigenvector_centrality'+filename+'_.eps'), 
+                            dpi = 300, bbox_inches='tight')
+                
+                plt.close(fig)
+        except:
+            pass
 
         '''
         PLOTTING OF MEA GRID
