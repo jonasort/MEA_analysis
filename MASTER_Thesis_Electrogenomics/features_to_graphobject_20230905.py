@@ -268,8 +268,8 @@ SCRIPT
 
 def main():
     
-    # inputdirectory = input('Please enter the file directory: ')
-    inputdirectory = "/Users/jonas/Documents/DATA/Data_Tuscany/output/2022-07-28_cortex_div9_biometra_ID2206CT004_8mmolK10µMGabazine_spont_2"
+    inputdirectory = input('Please enter the file directory: ')
+    #inputdirectory = "/Users/jonas/Documents/DATA/Data_Tuscany/output/2022-07-28_cortex_div9_biometra_ID2206CT004_8mmolK10µMGabazine_spont_2"
     os.chdir(inputdirectory)
     filelist = glob.glob('*.pkl')
     
