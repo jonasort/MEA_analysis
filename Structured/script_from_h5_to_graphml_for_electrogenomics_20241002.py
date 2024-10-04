@@ -1521,7 +1521,7 @@ def main():
                         # new added 20241002
                         cutouts = filter_cutouts(cutouts, threshold=100)
                         
-                        if first_iteration_for_cutouts == 1:
+                        if first_iteration_for_cutouts <= 10:
                             cutouts_dic[channellabel] = cutouts
                         
                         
@@ -1929,7 +1929,7 @@ def main():
                 sec_array = np.asarray(spikedic_MAD[key])*tick*scale_factor_for_second
                 spikedic_seconds[key]=sec_array
                 active_channels += 1
-        spikearray_seconds = np.asarray(list(spikedic_seconds.values()))  
+        spikearray_seconds = list(spikedic_seconds.values())
         
         # add them to the sub dictionaries
         Basics['active_channels'] = active_channels
@@ -2235,7 +2235,7 @@ def main():
         timelengthrecording_s = MAIN_RECORDING_DICTIONARY['Infos_Recording']['timelengthrecording_s']
         scale_factor_for_second = MAIN_RECORDING_DICTIONARY['Infos_Recording']['scale_factor_for_second']
         scale_factor_for_milisecond = scale_factor_for_second/1000
-        spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
+        #spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
 
         # get the isi distribution
         st_channel = spikedic_MAD
@@ -2315,7 +2315,7 @@ def main():
                 sec_array = np.asarray(burststart_dic[key])*tick*scale_factor_for_second
                 spikedic_seconds[key]=sec_array
                 active_channels += 1
-        spikearray_seconds = np.asarray(list(spikedic_seconds.values())) 
+        spikearray_seconds = list(spikedic_seconds.values()) 
 
 
         # calculate and save inter burst intervals and save them to main recording dic
@@ -2607,11 +2607,11 @@ def main():
         timelengthrecording_s = MAIN_RECORDING_DICTIONARY['Infos_Recording']['timelengthrecording_s']
         scale_factor_for_second = MAIN_RECORDING_DICTIONARY['Infos_Recording']['scale_factor_for_second']
         scale_factor_for_milisecond = scale_factor_for_second/1000
-        spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
+        #spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
 
 
         network_bursts_seconds = MAIN_RECORDING_DICTIONARY['network_bursts_seconds']
-        spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
+        #spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
         fr_dic = MAIN_RECORDING_DICTIONARY['fr_dic']
         isi_dictionary = MAIN_RECORDING_DICTIONARY['isi_dictionary']
         isi_average_dic = MAIN_RECORDING_DICTIONARY['isi_average_dic']
@@ -2832,7 +2832,7 @@ def main():
         all basic parameters are imported
         '''
         MAIN_RECORDING_DICTIONARY = pickle.load(open('MAIN_RECORDING_Dictionary_'+filename+'.pkl', "rb"))
-        spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
+        #spikedic_MAD = MAIN_RECORDING_DICTIONARY['spikedic_MAD']
         tick = MAIN_RECORDING_DICTIONARY['Infos_Recording']['tick']
         timelengthrecording_s = MAIN_RECORDING_DICTIONARY['Infos_Recording']['timelengthrecording_s']
         info_dics_subrecordings = MAIN_RECORDING_DICTIONARY['Infos_Recording']['info_dics_subrecordings']
@@ -2852,7 +2852,7 @@ def main():
             spikedic_seconds[key]=sec_array
             active_channels += 1
             
-        spikearray_seconds = np.asarray(list(spikedic_seconds.values()))  
+        spikearray_seconds = list(spikedic_seconds.values())
         
         
         '''
@@ -3216,7 +3216,7 @@ def main():
         
         
         # save the graph object
-        nx.write_gpickle(G, os.path.join(outputdirectory, 'graph_object_' + filename + '.pkl'))
+       # nx.write_gpickle(G, os.path.join(outputdirectory, 'graph_object_' + filename + '.pkl'))
         
         
         for node, data in list(G.nodes(data=True)):
