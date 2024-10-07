@@ -1234,7 +1234,7 @@ def filter_cutouts(data, threshold):
 
 def main():
     
-    inputdirectory = input('Please enter the file directory: ')
+    inputdirectory = r"{}".format(input("Please enter the file directory: ").strip())
     os.chdir(inputdirectory)
     filelist= glob.glob("*.h5")
     layerdictionary_list = glob.glob('*layerdic*')
