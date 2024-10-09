@@ -1801,10 +1801,10 @@ def main():
             
             
             
-    bool_location = 0
-    while bool_location != ('A' or 'R'):
-        bool_location = input('Enter A if this file is from Aachen and R if it is from Reutlingen: ')
-        if bool_location != ('A' or 'R'):
+    bool_location = ''
+    while bool_location not in ['A', 'R']:
+        bool_location = input('Enter A if this file is from Aachen and R if it is from Reutlingen: ').strip().upper()
+        if bool_location not in ['A', 'R']:
             print('Please insert a valid input.')
 
 
@@ -1873,7 +1873,11 @@ def main():
         cutouts_dic ={} 
         keylist = []
         filename = file
-        filedatebase = filename.split('T')[0]
+        filedatebase = ''
+        if bool_location == 'A':
+            filedatebase = filename.split('T')[0]
+        else:
+            filedatebase == filename.split('__')[0]
         filenamebase = filename.split('__')[1]
         #filebase = filename.split('.')[0]
         filebase = filedatebase + '_' + filenamebase
@@ -2385,7 +2389,7 @@ def main():
                     if len(spikedic_MAD[key])>relevant_factor:
                         sec_array = spikedic_MAD[key]*tick*scale_factor_for_second
                         spikedic_seconds[key]=sec_array
-                spikearray_seconds = np.asarray(list(spikedic_seconds.values()))
+                spikearray_seconds = list(spikedic_seconds.values())
                 
                 '''
                 
@@ -2554,6 +2558,7 @@ def main():
                 # remove for reutlingen data
                 if bool_location == 'A':
                     filename = filebase
+                    
                 
     
                 np.save(filename+'_'+str(starting_point)+'_'+str(stopping_point)+'_spikes_MAD_dict.npy', spikedic_MAD) 
@@ -2761,7 +2766,7 @@ def main():
                 sec_array = np.asarray(spikedic_MAD[key])*tick*scale_factor_for_second
                 spikedic_seconds[key]=sec_array
                 active_channels += 1
-        spikearray_seconds = np.asarray(list(spikedic_seconds.values()))  
+        spikearray_seconds = list(spikedic_seconds.values())  
         
         # add them to the sub dictionaries
         Basics['active_channels'] = active_channels
@@ -3157,7 +3162,7 @@ def main():
                 sec_array = np.asarray(burststart_dic[key])*tick*scale_factor_for_second
                 spikedic_seconds[key]=sec_array
                 active_channels += 1
-        spikearray_seconds = np.asarray(list(spikedic_seconds.values())) 
+        spikearray_seconds = list(spikedic_seconds.values()) 
 
 
         # calculate and save inter burst intervals and save them to main recording dic
