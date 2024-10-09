@@ -1,0 +1,17 @@
+numpy==1.26.4
+pandas==2.1.4
+scipy==1.11.4
+matplotlib==3.8.0
+seaborn==0.12.2
+scikit-learn==1.2.2
+h5py==3.9.0
+neo==0.13.0
+quantities==0.15.0
+McsPyDataTools==0.4.3
+networkx == 3.1
+plotly == 5.9.0
+Ipython == 8.20.0
+
+# Add any other specific packages you need for your analysis
+
+
