@@ -1222,6 +1222,103 @@ def filter_cutouts(data, threshold):
     
     return filtered_data
 
+# added 21 October 2024
+
+def detect_network_events(spike_times, bin_size=0.005, short_smooth=0.1, long_smooth=1.0, baseline_window=300):
+    # Bin spikes
+    bins = np.arange(0, max(spike_times), bin_size)
+    hist, _ = np.histogram(spike_times, bins)
+    
+    # Calculate firing rates
+    firing_rate = hist / bin_size
+    
+    # Smooth at two scales
+    short_window = int(short_smooth / bin_size)
+    long_window = int(long_smooth / bin_size)
+    fr_short = gaussian_smoothing(firing_rate, window_size=short_window, sigma=short_window//4)
+    fr_long = gaussian_smoothing(firing_rate, window_size=long_window, sigma=long_window//4)
+    
+    # Calculate adaptive threshold
+    baseline_bins = int(baseline_window / bin_size)
+    threshold = np.convolve(fr_long, np.ones(baseline_bins)/baseline_bins, mode='same')
+    threshold += 2 * np.std(fr_long)
+    
+    # Detect events
+    events = []
+    in_event = False
+    for i, (rate_short, rate_long, thresh) in enumerate(zip(fr_short, fr_long, threshold)):
+        if not in_event and rate_short > thresh:
+            start = i
+            in_event = True
+        elif in_event and rate_short <= thresh:
+            end = i
+            events.append((start * bin_size, end * bin_size))
+            in_event = False
+    
+    # Classify events
+    classified_events = []
+    for start, end in events:
+        duration = end - start
+        peak_fr = max(fr_short[int(start/bin_size):int(end/bin_size)])
+        if duration < 2:  # Less than 2000 ms
+            event_type = 'burst'
+        else:
+            event_type = 'active_period'
+        classified_events.append((start, end, event_type, peak_fr))
+    
+    return classified_events
+
+def gaussian_smoothing(y, window_size=10, sigma=2):
+    # This function should be defined as in your original code
+    # Here's a simple implementation if you don't have one:
+    x = np.arange(-window_size//2, window_size//2)
+    gaussian = np.exp(-(x**2)/(2*sigma**2))
+    gaussian = gaussian / np.sum(gaussian)
+    return np.convolve(y, gaussian, mode='same')
+            
+
+def plot_network_activity(spike_times, spikearray_seconds, classified_events, bin_size=0.005, smooth_window=0.1, filename='network_activity_plot'):
+    # Calculate firing rate
+    bins = np.arange(0, max(spike_times), bin_size)
+    hist, _ = np.histogram(spike_times, bins)
+    firing_rate = hist / bin_size
+    
+    # Smooth firing rate
+    smooth_window_bins = int(smooth_window / bin_size)
+    smoothed_fr = gaussian_smoothing(firing_rate, window_size=smooth_window_bins, sigma=smooth_window_bins//4)
+    
+    # Create plot
+    fig = plt.figure(figsize=(20, 10))
+    gs = fig.add_gridspec(2, hspace=0, height_ratios=[1, 5])
+    axs = gs.subplots(sharex=True, sharey=False)
+    
+    # Plot smoothed firing rate
+    axs[0].plot(bins[:-1], smoothed_fr, color='black', linewidth=0.5)
+    axs[0].set_ylabel('Firing Rate [Hz]')
+    
+    # Plot raster
+    axs[1].eventplot(spikearray_seconds, color='black', linewidths=0.3, linelengths=1)
+    axs[1].set_ylabel('Channels')
+    axs[1].set_xlabel('Time [s]')
+    
+    # Mark detected events
+    for start, end, event_type, _ in classified_events:
+        color = '#5B89A6' if event_type == 'burst' else '#A65B7B'
+        for ax in axs:
+            ax.axvspan(start, end, facecolor=color, alpha=0.3)
+    
+    # Add legend
+    from matplotlib.patches import Patch
+    legend_elements = [Patch(facecolor='#5B89A6', alpha=0.3, label='Burst'),
+                       Patch(facecolor='#A65B7B', alpha=0.3, label='Active Period')]
+    axs[0].legend(handles=legend_elements, loc='upper right')
+    
+    # Adjust layout and save
+    plt.tight_layout()
+    plt.savefig(f'{filename}.png', dpi=300)
+    plt.close()
+
+
 
 
 
@@ -1284,6 +1381,7 @@ def main():
     resting_spikedic={}
     spikedic={}
     spikedic_MAD={}
+    cutout_mean_dictionary={}
     artefactsdic_MAD={}
     cutouts_dic ={} 
     keylist = []
@@ -1507,7 +1605,7 @@ def main():
                             # new added 20241002
                             cutouts = filter_cutouts(cutouts, threshold=100)
                             
-                            if first_iteration_for_cutouts <= 10:
+                            if first_iteration_for_cutouts <= 1:
                                 cutouts_dic[channellabel] = cutouts
                             
                             
@@ -1537,6 +1635,9 @@ def main():
                             fig2.savefig(fullfig_2_name)
                             plt.close(fig2) 
                             plt.clf()
+                            
+                            cutout_mean_dictionary[channellabel]=cutout_mean
+                            
                     except:
                         pass
                     
@@ -1561,7 +1662,7 @@ def main():
                 out the plot for the subrecording
                 
                 '''
-            
+                
                 # get a 1-D array with every detected spike
                 scale_factor_for_milisecond = 1e-03
                 full_spike_list = []
@@ -1743,6 +1844,8 @@ def main():
         '''        
         os.chdir(mainoutputdirectory)
         outputfolderlist = glob.glob('*')
+        outputfolderlist = [item for item in outputfolderlist if os.path.isdir(item)]
+
         
         #from here we will loop to each main outputfolder
         for mainfolder in outputfolderlist:
@@ -1901,9 +2004,13 @@ def main():
             
             main_recording_dictionary['spikedic_MAD'] = spikedic_MAD
             
+            
             # and save it separately
             np.save(os.path.join(mainoutputdirectory, mainfolder, filename +'_full_spikedic_removed_artefacts.npy'),           
                     spikedic_MAD)
+            
+            # also add the cutout dictionary
+            main_recording_dictionary['waveform_means']=cutout_mean_dictionary
             
             
             # relevant factor: minimal amount of spikes to be relevant
@@ -2091,7 +2198,42 @@ def main():
                 for i in bursts_seconds:
                     axs[1].axvspan(i[0], i[1], facecolor = '#5B89A6', alpha = 0.3)
             fig.savefig(os.path.join(mainoutputdirectory, mainfolder, 
-                                     filename+ '__raster_firingrate_plot.png'), dpi=300)
+                                     filename+ '__raster_firingrate_plot_old.png'), dpi=300)
+            
+                        
+            
+
+            
+            '''
+            recent (october 2024) method to find network events
+            '''            
+            
+            classified_events = detect_network_events(full_spikes_seconds)
+            
+            
+            lastpath=os.getcwd()
+            os.chdir(os.path.join(mainoutputdirectory, mainfolder))
+            plot_network_activity(spike_times = full_spike_list_seconds,
+                                  spikearray_seconds=spikearray_seconds,
+                                  classified_events=classified_events)
+            
+            os.chdir(lastpath)
+                        
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             
             
             
@@ -2106,6 +2248,7 @@ def main():
             # add it to the main dictionary
             main_recording_dictionary['fr_dic'] = whole_recording_firingrate_dic
             
+            main_recording_dictionary['network_events'] = classified_events
             
             '''
             2.3 
